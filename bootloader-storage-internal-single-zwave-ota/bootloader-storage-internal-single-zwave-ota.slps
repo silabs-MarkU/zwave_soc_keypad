@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="ASCII"?>
+<model:MDescriptors xmlns:model="http://www.silabs.com/ss/Studio.ecore">
+  <descriptors name="bootloader-storage-internal-single-zwave-ota">
+    <properties key="projectCommon.sdkId" value="com.silabs.sdk.stack.sisdk:2025.12.1._1296179140-563987569"/>
+    <properties key="universalConfig.relativeWorkspacePath" value="../../ZWave_SoC_Keypad_Solution.slcw"/>
+    <properties key="universalConfig.generationDirectory" value="../../../../../../../../../Documents/keypad_solution_poc/bootloader-storage-internal-single-zwave-ota"/>
+    <properties key="universalConfig.toolchainCompatibility" value="iar llvm gcc"/>
+    <properties key="projectCommon.overwriteCopiedSources" value="false"/>
+    <properties key="projectCommon.boardIds" value="brd4210a:0.0.0.A01 brd4002a:0.0.0.A06"/>
+    <properties key="projectCommon.kitId" value=""/>
+    <properties key="projectCommon.partId" value="mcu.arm.efr32.zg23.efr32zg23b020f512im48"/>
+    <properties key="universalConfig.projectTypeIds" value="visual-studio-code"/>
+    <properties key="projectCommon.importModeId" value="LINK_LIBRARIES"/>
+    <properties key="universalConfig.compSelProjInstanceId" value="1773015981333"/>
+  </descriptors>
+</model:MDescriptors>

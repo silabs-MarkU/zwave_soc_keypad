@@ -1,0 +1,33 @@
+---
+parameters: []
+constants:
+- name: "workspace_name"
+  value: "ZWave_SoC_Keypad_Solution"
+- path: "zwave_soc_keypad/zwave_soc_keypad.slpb"
+- path: "bootloader-storage-internal-single-zwave-ota/bootloader-storage-internal-single-zwave-ota.slpb"
+steps:
+- task: "convert"
+  output: "artifacts/{{workspace_name}}-full.s37"
+  input:
+  - "{{application_binary_s37}}"
+  - "{{bootloader_binary_s37}}"
+- task: "convert"
+  output: "artifacts/{{workspace_name}}-full.hex"
+  input:
+  - "{{application_binary_hex}}"
+  - "{{bootloader_binary_hex}}"
+- task: "copy"
+  output: "artifacts/{{workspace_name}}-bootloader-only.s37"
+  input: "{{bootloader_binary_s37}}"
+- task: "copy"
+  output: "artifacts/{{workspace_name}}-bootloader-only.hex"
+  input: "{{bootloader_binary_hex}}"
+- task: "copy"
+  output: "artifacts/{{workspace_name}}-application-only.hex"
+  input: "{{application_binary_hex}}"
+- task: "copy"
+  output: "artifacts/{{workspace_name}}-application-only.s37"
+  input: "{{application_binary_s37}}"
+- task: "copy"
+  output: "artifacts/{{workspace_name}}-application-only.gbl"
+  input: "{{application_binary_gbl}}"

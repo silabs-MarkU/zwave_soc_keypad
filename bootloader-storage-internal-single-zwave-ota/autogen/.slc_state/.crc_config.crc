@@ -1,0 +1,16 @@
+#CRC Codes for initially generated config files -- do not modify!
+btl_aes_ctr_stream_block_cfg.h=1546079111
+btl_core_cfg.h=862132763
+btl_debug_cfg.h=-555597884
+btl_internal_storage_cfg.h=1668004842
+btl_storage_cfg.h=684631276
+btl_storage_cfg_default.h=-1270600582
+btl_storage_slot_cfg.h=1530372064
+btl_storage_slot_cfg_default.h=1689416951
+psa_crypto_config.h=2001171959
+sl_core_config.h=-2018153270
+sl_fault_injection_hardening_cfg.h=1583405622
+sl_mbedtls_device_config.h=-1083250924
+sl_mbedtls_trustzone_config.h=-260821329
+sl_memory_manager_config.h=818489708
+sl_memory_manager_region_config.h=990835082

@@ -1,0 +1,19 @@
+---
+workspace_name: "ZWave_SoC_Keypad_Solution"
+label: "ZWave_SoC_DoorLockKeypad_Solution"
+quality: "production"
+package: "zwave_sample_app"
+description: "Demonstrates Door Lock application combined with OTA bootloader. The\
+  \ Z-Wave certified Door Lock application shows a lock implementation. It will support\
+  \ user codes to open a door and thereby eliminate the need for traditional keys.\
+  \ It is possible to both lock and unlock the door remotely through the Z-Wave protocol.\n"
+project:
+- id: "application"
+  path: "zwave_soc_keypad/zwave_soc_keypad.slcp"
+  output: "zwave_soc_keypad"
+- id: "bootloader"
+  path: "bootloader-storage-internal-single-zwave-ota/bootloader-storage-internal-single-zwave-ota.slcp"
+  output: "bootloader-storage-internal-single-zwave-ota"
+post_build:
+  profile: "zwave_workspace"
+  path: "ZWave_SoC_Keypad_Solution.slpb"

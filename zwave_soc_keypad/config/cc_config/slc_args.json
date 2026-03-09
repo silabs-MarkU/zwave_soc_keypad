@@ -1,0 +1,6 @@
+{
+  "sdkRoot" : "/Users/maumina/.silabs/slt/installs/conan/p/simpl1a11563c2e399/p/",
+  "apackRoot" : "/Users/maumina/.silabs/slt/installs/conan/p/simpl1a11563c2e399/p/zwave_cc_configurator",
+  "partOpn" : "efr32zg23b020f512im48",
+  "boards" : "brd4210arevA01,brd4002arevA06"
+}
