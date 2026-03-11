@@ -5,3 +5,4 @@ bootloader-storage-internal-single-zwave-ota/artifacts/
 bootloader-storage-internal-single-zwave-ota/cmake_gcc/build/
 zwave_soc_keypad/artifacts/
 zwave_soc_keypad/cmake_gcc/build/
+zwave_soc_keypad/.uceditor/
