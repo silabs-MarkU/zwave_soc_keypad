@@ -34,10 +34,7 @@
 #include <events.h>
 #include <zaf_event_distributor_soc.h>
 #include "app_button_handler.h"
-#include "cc_user_code_config.h"
-#include "CC_UserCode.h"
 #include "app_button_handler.h"
-#include "ZAF_nvm_app.h"
 #include "zpal_log.h"
 
 // -----------------------------------------------------------------------------
@@ -55,13 +52,6 @@
 // -----------------------------------------------------------------------------
 //                                Static Variables
 // -----------------------------------------------------------------------------
-
-static uint8_t user_code[] = CC_USER_CODE_DEFAULT;
-static cc_user_code_event_validate_data_t user_code_event_validate_data = {
-  .id = 1,
-  .data = user_code,
-  .length = sizeof(user_code)
-};
 
 // -----------------------------------------------------------------------------
 //                          Public Functions Declarations
@@ -93,43 +83,18 @@ static cc_user_code_event_validate_data_t user_code_event_validate_data = {
  */
 void app_button_press_btn_0_handler(uint8_t duration)
 {
-  bool doorhandle_status = true;
   uint8_t app_event = EVENT_EMPTY;
   uint16_t command_class = COMMAND_CLASS_NO_OPERATION;
   uint8_t cc_event;
   void *cc_data;
 
-  ZAF_nvm_app_read(FILE_ID_APPLICATIONDATA, &doorhandle_status, sizeof(doorhandle_status));
-
   switch (duration) {
     case APP_BUTTON_PRESS_DURATION_SHORT:
-      /*
-       * This events simulates entering a user code on a key pad.
-       * The entered user code is hardcoded with the value of the default user
-       * code of the application. Hence, the lock can be secured/unsecured by
-       * default.
-       *
-       * If the user code for user ID 1 is changed to something else than the
-       * default user code the lock can no longer be secured/unsecured by
-       * this event.
-       */
-      ZPAL_LOG_DEBUG(ZPAL_LOG_APP, "\r\nUser code entered!\r\n");
-      command_class = COMMAND_CLASS_USER_CODE;
-      cc_event = CC_USER_CODE_EVENT_VALIDATE;
-      cc_data = &user_code_event_validate_data;
       break;
     case APP_BUTTON_PRESS_DURATION_MEDIUM:
       app_event = EVENT_APP_BATTERY_REPORT;
       break;
     case APP_BUTTON_PRESS_DURATION_LONG:
-      if (doorhandle_status) {
-        app_event = EVENT_APP_DOORHANDLE_ACTIVATED;
-        doorhandle_status = false;
-      } else {
-        app_event = EVENT_APP_DOORHANDLE_DEACTIVATED;
-        doorhandle_status = true;
-      }
-      ZAF_nvm_app_write(FILE_ID_APPLICATIONDATA, &doorhandle_status, sizeof(doorhandle_status));
       break;
     default:
       break;

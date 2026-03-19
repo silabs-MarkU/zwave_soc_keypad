@@ -56,6 +56,14 @@
 // [PRS.SYNCH3]$
 
 // $[GPIO]
+// GPIO SWV on PA03
+#ifndef GPIO_SWV_PORT                           
+#define GPIO_SWV_PORT                            SL_GPIO_PORT_A
+#endif
+#ifndef GPIO_SWV_PIN                            
+#define GPIO_SWV_PIN                             3
+#endif
+
 // [GPIO]$
 
 // $[TIMER0]
@@ -119,6 +127,38 @@
 // [I2C0]$
 
 // $[EUSART0]
+// EUSART0 CTS on PA10
+#ifndef EUSART0_CTS_PORT                        
+#define EUSART0_CTS_PORT                         SL_GPIO_PORT_A
+#endif
+#ifndef EUSART0_CTS_PIN                         
+#define EUSART0_CTS_PIN                          10
+#endif
+
+// EUSART0 RTS on PA00
+#ifndef EUSART0_RTS_PORT                        
+#define EUSART0_RTS_PORT                         SL_GPIO_PORT_A
+#endif
+#ifndef EUSART0_RTS_PIN                         
+#define EUSART0_RTS_PIN                          0
+#endif
+
+// EUSART0 RX on PA09
+#ifndef EUSART0_RX_PORT                         
+#define EUSART0_RX_PORT                          SL_GPIO_PORT_A
+#endif
+#ifndef EUSART0_RX_PIN                          
+#define EUSART0_RX_PIN                           9
+#endif
+
+// EUSART0 TX on PA08
+#ifndef EUSART0_TX_PORT                         
+#define EUSART0_TX_PORT                          SL_GPIO_PORT_A
+#endif
+#ifndef EUSART0_TX_PIN                          
+#define EUSART0_TX_PIN                           8
+#endif
+
 // [EUSART0]$
 
 // $[PTI]

@@ -7,19 +7,16 @@
 #include "sl_rail_util_power_manager_init.h"
 #include "btl_interface.h"
 #include "sl_board_control.h"
-#include "app_log.h"
 #include "app_rta_internal.h"
 #include "sl_debug_swo.h"
 #include "sl_gpio.h"
 #include "gpiointerrupt.h"
 #include "sl_iostream_init_eusart_instances.h"
-#include "sl_iostream_stdlib_config.h"
 #include "sl_mbedtls.h"
 #include "sl_simple_button_instances.h"
 #include "sl_simple_led_instances.h"
 #include "app_button_press.h"
 #include "ZW_basis_api.h"
-#include "sl_cli_instances.h"
 #include "psa/crypto.h"
 #include "sl_se_manager.h"
 #include "sl_iostream_init_instances.h"
@@ -79,13 +76,11 @@ void sl_service_init(void)
 {
   sl_board_configure_vcom();
   sl_hfxo_manager_init();
-  sl_iostream_stdlib_disable_buffering();
   sl_mbedtls_init();
   psa_crypto_init();
   sl_se_init();
   sl_iostream_init_instances_stage_1();
   sl_iostream_init_instances_stage_2();
-  sl_cli_instances_init();
   sl_token_manager_init();
 }
 
@@ -98,7 +93,6 @@ void sl_stack_init(void)
 
 void sl_internal_app_init(void)
 {
-  app_log_init();
   app_rta_ready();
 }
 

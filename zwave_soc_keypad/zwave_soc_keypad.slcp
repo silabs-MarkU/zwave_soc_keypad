@@ -7,191 +7,84 @@ description: |
 category: Z-Wave|Apps
 filter:
 - name: Device Type
-  value:
-  - SoC
+  value: [SoC]
 - name: Project Difficulty
-  value:
-  - Advanced
+  value: [Advanced]
 - name: Wireless Technology
-  value:
-  - Z-Wave
+  value: [Z-Wave]
 package: zwave_sample_app
 quality: production
 readme:
-- path: README.md
+- {path: README.md}
 source:
-- path: app.c
-- path: app_cc_event_handlers.c
-- path: app_cli.c
-- path: app_btn_handler.c
-- path: app_cc_door_lock_callbacks.c
-tag:
-- prebuilt_demo
-- toolchain:gcc
-- hwfilter:device:device_supports_zwave
+- {path: app.c}
+- {path: app_cc_event_handlers.c}
+- {path: app_cli.c}
+- {path: app_btn_handler.c}
+- {path: app_cc_door_lock_callbacks.c}
+tag: [prebuilt_demo, 'toolchain:gcc', 'hwfilter:device:device_supports_zwave']
 include:
 - path: .
   file_list:
-  - path: app_credentials.h
-  - path: events.h
-sdk:
-  vendor: silabs
-  id: simplicity_sdk
-  version: 2025.12.1
-toolchain_settings: [
-  ]
+  - {path: app_credentials.h}
+  - {path: events.h}
+sdk: {vendor: silabs, id: simplicity_sdk, version: 2025.12.1}
+toolchain_settings: []
 component:
+- {package: simplicity_sdk, vendor: silabs, id: EFR32ZG23B020F512IM48}
+- {package: simplicity_sdk, vendor: silabs, id: ZW_MIGRATION_TO_7_19}
+- {package: simplicity_sdk, vendor: silabs, id: app_assert}
+- {package: simplicity_sdk, vendor: silabs, id: app_button_press}
+- {package: simplicity_sdk, vendor: silabs, id: brd4210a}
+- {package: simplicity_sdk, vendor: silabs, id: clock_manager}
+- {package: simplicity_sdk, vendor: silabs, id: device_init}
+- {package: simplicity_sdk, vendor: silabs, id: emlib_letimer}
+- {package: simplicity_sdk, vendor: silabs, id: emlib_msc}
+- {package: simplicity_sdk, vendor: silabs, id: emlib_timer}
+- {package: simplicity_sdk, vendor: silabs, id: gpiointerrupt}
+- {package: simplicity_sdk, vendor: silabs, id: mpu}
 - package: simplicity_sdk
-  vendor: silabs
-  id: EFR32ZG23B020F512IM48
-- package: simplicity_sdk
-  vendor: silabs
-  id: ZW_MIGRATION_TO_7_19
-- package: simplicity_sdk
-  vendor: silabs
-  id: app_assert
-- package: simplicity_sdk
-  vendor: silabs
-  id: app_button_press
-- package: simplicity_sdk
-  vendor: silabs
-  id: brd4210a
-- package: simplicity_sdk
-  vendor: silabs
-  id: clock_manager
-- package: simplicity_sdk
-  vendor: silabs
-  id: device_init
-- package: simplicity_sdk
-  vendor: silabs
-  id: emlib_letimer
-- package: simplicity_sdk
-  vendor: silabs
-  id: emlib_msc
-- package: simplicity_sdk
-  vendor: silabs
-  id: emlib_timer
-- package: simplicity_sdk
-  vendor: silabs
-  id: gpiointerrupt
-- package: simplicity_sdk
-  vendor: silabs
-  id: mpu
-- package: simplicity_sdk
-  instance:
-  - btn0
-  - btn1
+  instance: [btn0, btn1]
   vendor: silabs
   id: simple_button
 - package: simplicity_sdk
-  instance:
-  - led0
-  - led1
+  instance: [led0, led1]
   vendor: silabs
   id: simple_led
-- package: simplicity_sdk
-  vendor: silabs
-  id: sl_main
-- package: simplicity_sdk
-  vendor: silabs
-  id: zaf_soc
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_appshw
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_appshw_cc_battery_callbacks
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_association
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_basic
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_battery
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_battery_nvm
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_common
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_deviceresetlocally
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_door_lock
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_door_lock_nvm
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_firmwareupdate
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_indicator
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_manufacturerspecific
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_multi_channel_control
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_powerlevel
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_supervision
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_user_code
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_user_code_nvm
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_version
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cc_zwaveplusinfo
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_cli_common
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_core
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_ota
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_role_type_sleeping_listening
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_true_status
-- package: simplicity_sdk
-  vendor: silabs
-  id: zw_zaf
+- {package: simplicity_sdk, vendor: silabs, id: sl_main}
+- {package: simplicity_sdk, vendor: silabs, id: zaf_soc}
+- {package: simplicity_sdk, vendor: silabs, id: zw_appshw}
+- {package: simplicity_sdk, vendor: silabs, id: zw_appshw_cc_battery_callbacks}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_association}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_basic}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_battery}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_battery_nvm}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_common}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_deviceresetlocally}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_firmwareupdate}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_indicator}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_manufacturerspecific}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_multi_channel_control}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_powerlevel}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_supervision}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_version}
+- {package: simplicity_sdk, vendor: silabs, id: zw_cc_zwaveplusinfo}
+- {package: simplicity_sdk, vendor: silabs, id: zw_core}
+- {package: simplicity_sdk, vendor: silabs, id: zw_ota}
+- {package: simplicity_sdk, vendor: silabs, id: zw_role_type_sleeping_listening}
+- {package: simplicity_sdk, vendor: silabs, id: zw_true_status}
+- {package: simplicity_sdk, vendor: silabs, id: zw_zaf}
 define:
-- name: APP_PROPERTIES_CONFIG_FILE
-  value: <application_properties_config.h>
-- name: FILE_ID_APPLICATIONDATA
-  value: '0x00000'
+- {name: APP_PROPERTIES_CONFIG_FILE, value: <application_properties_config.h>}
+- {name: FILE_ID_APPLICATIONDATA, value: '0x00000'}
 config_file:
-- path: config/cc_config/DoorLockKeyPad.cc_config
-  directory: cc_config
-- path: config/sample_keys/sample_encrypt.key
-  directory: sample_keys
-- path: config/sample_keys/sample_sign.key
-  directory: sample_keys
+- {path: config/cc_config/DoorLockKeyPad.cc_config, directory: cc_config}
+- {path: config/sample_keys/sample_encrypt.key, directory: sample_keys}
+- {path: config/sample_keys/sample_sign.key, directory: sample_keys}
 template_contribution:
 - name: cli_command
   priority: 0
-  value:
-    name: battery_report
-    handler: cli_battery_report
-    help: Send battery report
+  value: {name: battery_report, handler: cli_battery_report, help: Send battery report}
 - name: cli_command
   priority: 0
   value:
@@ -199,8 +92,7 @@ template_contribution:
     handler: cli_enter_user_code
     help: Enter a user code
     argument:
-    - type: string
-      help: Current user code
+    - {type: string, help: Current user code}
 - name: cli_command
   priority: 0
   value:
@@ -208,8 +100,7 @@ template_contribution:
     handler: cli_set_new_user_code
     help: Set a new user code
     argument:
-    - type: string
-      help: User code to be set
+    - {type: string, help: User code to be set}
 - name: cli_command
   priority: 0
   value:
@@ -217,141 +108,89 @@ template_contribution:
     handler: cli_set_doorhandle_state
     help: Set door handle state to locked (1) or unlocked (0)
     argument:
-    - type: string
-      help: activate or deactivate
+    - {type: string, help: activate or deactivate}
 - name: cli_command
   priority: 0
-  value:
-    name: get_doorhandle_state
-    handler: cli_get_doorhandle_state
-    help: Get door handle state
+  value: {name: get_doorhandle_state, handler: cli_get_doorhandle_state, help: Get
+      door handle state}
 - name: cli_command
   priority: 0
-  value:
-    name: get_doorbolt_state
-    handler: cli_get_doorbolt_state
-    help: Get door bolt state
+  value: {name: get_doorbolt_state, handler: cli_get_doorbolt_state, help: Get door
+      bolt state}
 - name: cli_command
   priority: 0
-  value:
-    name: get_doorlatch_state
-    handler: cli_get_doorlatch_state
-    help: Get doorlatch state
+  value: {name: get_doorlatch_state, handler: cli_get_doorlatch_state, help: Get doorlatch
+      state}
 provides:
-- name: zwave_sample_application
-- name: zwave_soc_door_lock_keypad
+- {name: zwave_sample_application}
+- {name: zwave_soc_door_lock_keypad}
 configuration:
-- name: SHORT_BUTTON_PRESS_DURATION_MS
-  value: (400)
-- name: MEDIUM_BUTTON_PRESS_DURATION_MS
-  value: (1500)
-- name: ZAF_CONFIG_REQUEST_KEY_S0
-  value: '1'
-- name: ZAF_CONFIG_REQUEST_KEY_S2_ACCESS
-  value: '1'
-- name: ZAF_CONFIG_GENERIC_TYPE
-  value: GENERIC_TYPE_ENTRY_CONTROL
-- name: ZAF_CONFIG_SPECIFIC_TYPE
-  value: SPECIFIC_TYPE_DOOR_LOCK
-- name: ZAF_CONFIG_PRODUCT_ID
-  value: '1'
-- name: ZAF_CONFIG_USER_ICON_TYPE
-  value: ICON_TYPE_GENERIC_DOOR_LOCK_KEYPAD
-- name: ZAF_CONFIG_INSTALLER_ICON_TYPE
-  value: ICON_TYPE_GENERIC_DOOR_LOCK_KEYPAD
-- name: CC_DOOR_LOCK_HANDLE_1
-  value: DOOR_INSIDE
-- name: NVM3_DEFAULT_MAX_OBJECT_SIZE
-  value: '1900'
-- name: NVM3_DEFAULT_CACHE_SIZE
-  value: '100'
-- name: SL_BOARD_ENABLE_VCOM
-  value: '1'
-- name: configUSE_IDLE_HOOK
-  value: '1'
-- name: configTIMER_TASK_PRIORITY
-  value: '55'
-- condition:
-  - device_series_2
+- {name: SHORT_BUTTON_PRESS_DURATION_MS, value: (400)}
+- {name: MEDIUM_BUTTON_PRESS_DURATION_MS, value: (1500)}
+- {name: ZAF_CONFIG_REQUEST_KEY_S0, value: '1'}
+- {name: ZAF_CONFIG_REQUEST_KEY_S2_ACCESS, value: '1'}
+- {name: ZAF_CONFIG_GENERIC_TYPE, value: GENERIC_TYPE_ENTRY_CONTROL}
+- {name: ZAF_CONFIG_SPECIFIC_TYPE, value: SPECIFIC_TYPE_DOOR_LOCK}
+- {name: ZAF_CONFIG_PRODUCT_ID, value: '1'}
+- {name: ZAF_CONFIG_USER_ICON_TYPE, value: ICON_TYPE_GENERIC_DOOR_LOCK_KEYPAD}
+- {name: ZAF_CONFIG_INSTALLER_ICON_TYPE, value: ICON_TYPE_GENERIC_DOOR_LOCK_KEYPAD}
+- {name: CC_DOOR_LOCK_HANDLE_1, value: DOOR_INSIDE}
+- {name: NVM3_DEFAULT_MAX_OBJECT_SIZE, value: '1900'}
+- {name: NVM3_DEFAULT_CACHE_SIZE, value: '100'}
+- {name: SL_BOARD_ENABLE_VCOM, value: '1'}
+- {name: configUSE_IDLE_HOOK, value: '1'}
+- {name: configTIMER_TASK_PRIORITY, value: '55'}
+- condition: [device_series_2]
   name: configMAX_SYSCALL_INTERRUPT_PRIORITY
   value: '16'
-- condition:
-  - device_series_2
+- condition: [device_series_2]
   name: configKERNEL_INTERRUPT_PRIORITY
   value: '112'
-- name: configTIMER_QUEUE_LENGTH
-  value: '8'
-- condition:
-  - device_series_2
-  - device_security_vault
+- {name: configTIMER_QUEUE_LENGTH, value: '8'}
+- condition: [device_series_2, device_security_vault]
   name: SL_PSA_ITS_USER_MAX_FILES
   value: '32'
-- condition:
-  - device_series_2
-  - device_security_vault
+- condition: [device_series_2, device_security_vault]
   name: SL_PSA_KEY_USER_SLOT_COUNT
   value: '14'
-- condition:
-  - device_series_2
+- condition: [device_series_2]
   name: SL_SLEEPTIMER_PERIPHERAL
   value: SL_SLEEPTIMER_PERIPHERAL_BURTC
-- name: CC_ASSOCIATION_MAX_GROUPS_PER_ENDPOINT
-  value: '1'
-- name: CC_ASSOCIATION_MAX_NODES_IN_GROUP
-  value: '5'
-- name: ZAF_CONFIG_SECURE_ONLY
-  value: '1'
-- name: SL_PSA_ITS_SUPPORT_V1_DRIVER
-  value: '1'
-- name: SL_PSA_ITS_SUPPORT_V2_DRIVER
-  value: '1'
-- name: SL_PSA_ITS_SUPPORT_V3_DRIVER
-  value: '1'
-- name: ZAF_APP_NAME
-  value: '"door_lock_keypad"'
-- name: U3C_BUFFER_SIZE_CREDENTIAL_DATA
-  value: '32'
-- name: SL_IOSTREAM_USART_VCOM_CONVERT_BY_DEFAULT_LF_TO_CRLF
-  value: '1'
-- name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
-  value: '0'
-- name: SL_IOSTREAM_EUSART_VCOM_CONVERT_BY_DEFAULT_LF_TO_CRLF
-  value: '1'
-- unless:
-  - brd4204a
+- {name: CC_ASSOCIATION_MAX_GROUPS_PER_ENDPOINT, value: '1'}
+- {name: CC_ASSOCIATION_MAX_NODES_IN_GROUP, value: '5'}
+- {name: ZAF_CONFIG_SECURE_ONLY, value: '1'}
+- {name: SL_PSA_ITS_SUPPORT_V1_DRIVER, value: '1'}
+- {name: SL_PSA_ITS_SUPPORT_V2_DRIVER, value: '1'}
+- {name: SL_PSA_ITS_SUPPORT_V3_DRIVER, value: '1'}
+- {name: ZAF_APP_NAME, value: '"door_lock_keypad"'}
+- {name: U3C_BUFFER_SIZE_CREDENTIAL_DATA, value: '32'}
+- {name: SL_IOSTREAM_USART_VCOM_CONVERT_BY_DEFAULT_LF_TO_CRLF, value: '1'}
+- {name: SL_IOSTREAM_USART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION, value: '0'}
+- {name: SL_IOSTREAM_EUSART_VCOM_CONVERT_BY_DEFAULT_LF_TO_CRLF, value: '1'}
+- unless: [brd4204a]
   name: SL_IOSTREAM_EUSART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
   value: '0'
-- name: SL_IOSTREAM_EUSART_INSTANCE_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
-  value: '0'
-- name: SL_IOSTREAM_EUSART_VCOM_BAUDRATE
-  value: '9600'
-- unless:
-  - brd4204a
+- {name: SL_IOSTREAM_EUSART_INSTANCE_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION, value: '0'}
+- {name: SL_IOSTREAM_EUSART_VCOM_BAUDRATE, value: '9600'}
+- unless: [brd4204a]
   name: SL_IOSTREAM_EUSART_VCOM_ENABLE_HIGH_FREQUENCY
   value: '0'
-- name: SL_CLOCK_MANAGER_WDOG0CLK_SOURCE
-  value: CMU_WDOG0CLKCTRL_CLKSEL_LFRCO
-- unless:
-  - brd4204a
+- {name: SL_CLOCK_MANAGER_WDOG0CLK_SOURCE, value: CMU_WDOG0CLKCTRL_CLKSEL_LFRCO}
+- unless: [brd4204a]
   name: SL_CLOCK_MANAGER_EUSART0CLK_SOURCE
   value: CMU_EUSART0CLKCTRL_CLKSEL_LFRCO
-- condition:
-  - brd4204a
+- condition: [brd4204a]
   name: SL_CLOCK_MANAGER_EUSART0CLK_SOURCE
   value: CMU_EUSART0CLKCTRL_CLKSEL_EM01GRPCCLK
-- condition:
-  - brd4204a
+- condition: [brd4204a]
   name: SL_IOSTREAM_EUSART_VCOM_ENABLE_HIGH_FREQUENCY
   value: '1'
-- condition:
-  - brd4204a
+- condition: [brd4204a]
   name: SL_IOSTREAM_EUSART_VCOM_RESTRICT_ENERGY_MODE_TO_ALLOW_RECEPTION
   value: '1'
 ui_hints:
   highlight:
-  - path: README.md
-    focus: true
+  - {path: README.md, focus: true}
 post_build:
-- path: zwave_soc_keypad.slpb
-  profile: zwave_application
+- {path: zwave_soc_keypad.slpb, profile: zwave_application}
 

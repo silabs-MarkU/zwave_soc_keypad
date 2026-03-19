@@ -14,7 +14,6 @@
 #include "AppTimer.h"
 #include "SwTimer.h"
 #include "ZW_system_startup_api.h"
-#include "CC_DoorLock.h"
 #include "CC_Battery.h"
 #include "zaf_config_security.h"
 #include "ZAF_Common_helper.h"
@@ -29,6 +28,7 @@
 #include "zpal_misc.h"
 #include "zaf_protocol_config.h"
 #include "ZAF_PrintAppInfo.h"
+#include "ZW_TransportEndpoint.h" // Add this for ENDPOINT_ROOT and other defs -Mark U.
 
 #if defined(SL_COMPONENT_CATALOG_PRESENT)
 #include "sl_component_catalog.h"
@@ -164,18 +164,6 @@ zaf_event_distributor_app_event_manager(const uint8_t event)
         send_battery_level_report();
       }
       break;
-    case EVENT_APP_DOORHANDLE_ACTIVATED:
-    {
-      /* Outside door handle #1 activated? */
-      CC_DoorLock_SetOutsideDoorHandleState(DOOR_HANDLE_1);
-      break;
-    }
-    case EVENT_APP_DOORHANDLE_DEACTIVATED:
-    {
-      /* Outside door handle #1 deactivated? */
-      CC_DoorLock_ClearOutsideDoorHandleState(DOOR_HANDLE_1);
-      break;
-    }
     case EVENT_SYSTEM_LEARNMODE_FINISHED:
     {
       initialize_user_credential_database();

@@ -1,4 +1,5 @@
 # Untracked files from git status
+zwave_soc_keypad/.projectlinkstore
 ZWave_SoC_Keypad_Solution_cmake/build/
 artifacts/
 bootloader-storage-internal-single-zwave-ota/artifacts/
@@ -6,3 +7,11 @@ bootloader-storage-internal-single-zwave-ota/cmake_gcc/build/
 zwave_soc_keypad/artifacts/
 zwave_soc_keypad/cmake_gcc/build/
 zwave_soc_keypad/.uceditor/
+
+autogen/
+*.conf
+.vscode/
+artifact/
+trashed_modified_files/
+*.md
+*.png

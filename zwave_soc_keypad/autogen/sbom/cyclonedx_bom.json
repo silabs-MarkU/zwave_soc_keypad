@@ -3,7 +3,7 @@
   "specVersion" : "1.6",
   "version" : 1,
   "metadata" : {
-    "timestamp" : "2026-03-09T00:26:21Z",
+    "timestamp" : "2026-03-18T21:11:53Z",
     "authors" : [ {
       "name" : "Silicon Laboratories, Inc."
     } ],
@@ -476,18 +476,6 @@
     }, {
       "scope" : "required",
       "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:iostream_recommended_stream",
-      "name" : "IO Stream: Recommended Stream",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
       "bom-ref" : "silabs.simplicity_sdk:2025.12.1:sl_rail_util_compatible_pa",
       "name" : "RAIL Utility, PA compatibility",
       "version" : "2025.12.1",
@@ -756,30 +744,6 @@
     }, {
       "scope" : "required",
       "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:app_log",
-      "name" : "Log",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:cli_core",
-      "name" : "CLI Global Configuration",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
       "bom-ref" : "silabs.simplicity_sdk:2025.12.1:se_manager",
       "name" : "SE Manager",
       "version" : "2025.12.1",
@@ -936,18 +900,6 @@
     }, {
       "scope" : "required",
       "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:printf",
-      "name" : "Tiny printf",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "MIT"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
       "bom-ref" : "silabs.simplicity_sdk:2025.12.1:mbedtls_slcrypto",
       "name" : "Silicon Labs Mbed TLS support",
       "version" : "2025.12.1",
@@ -1046,18 +998,6 @@
       "type" : "library",
       "bom-ref" : "silabs.simplicity_sdk:2025.12.1:simple_button_core",
       "name" : "Simple Button Configuration",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:iostream_stdlib_config",
-      "name" : "IO Stream: STDLIB Configuration",
       "version" : "2025.12.1",
       "supplier" : {
         "name" : "Silicon Laboratories, Inc."
@@ -1272,18 +1212,6 @@
     }, {
       "scope" : "required",
       "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:iostream_retarget_stdio",
-      "name" : "IO Stream: Retarget STDIO",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
       "bom-ref" : "silabs.simplicity_sdk:2025.12.1:nvm3_source",
       "name" : "NVM3 Core (source)",
       "version" : "2025.12.1",
@@ -1298,42 +1226,6 @@
       "type" : "library",
       "bom-ref" : "silabs.simplicity_sdk:2025.12.1:emlib",
       "name" : "EMLIB Peripheral HAL",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:cli",
-      "name" : "CLI Instance(s)",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:cli_recommends",
-      "name" : "cli_recommends",
-      "version" : "2025.12.1",
-      "supplier" : {
-        "name" : "Silicon Laboratories, Inc."
-      },
-      "licenses" : [ {
-        "expression" : "Zlib"
-      } ]
-    }, {
-      "scope" : "required",
-      "type" : "library",
-      "bom-ref" : "silabs.simplicity_sdk:2025.12.1:cli_recommended_instance",
-      "name" : "Load recommended instance",
       "version" : "2025.12.1",
       "supplier" : {
         "name" : "Silicon Laboratories, Inc."

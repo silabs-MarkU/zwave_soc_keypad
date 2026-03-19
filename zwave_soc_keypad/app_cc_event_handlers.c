@@ -33,9 +33,6 @@
 // -----------------------------------------------------------------------------
 
 #include <stdint.h>
-
-#include "CC_DoorLock.h"
-#include "CC_UserCode.h"
 #include "CC_Supervision.h"
 #include "zaf_event_distributor_soc.h"
 #include "events.h"
@@ -64,47 +61,3 @@
 //                          Public Function Definitions
 // -----------------------------------------------------------------------------
 
-/**
- * @brief Handles user code application events.
- *
- * This function processes events related to user code applications.
- *
- * @param event The event to handle.
- * @param data Pointer to the event data.
- */
-static void user_code_app_event_handler(const uint8_t event, __attribute__((unused)) const void *data)
-{
-  switch (event) {
-    case CC_USER_CODE_EVENT_VALIDATE_VALID:
-      zaf_event_distributor_enqueue_cc_event(COMMAND_CLASS_DOOR_LOCK, CC_DOOR_LOCK_CODE_EVENT_TOGGLE, NULL);
-      break;
-  }
-}
-
-/**
- * @brief Handles events related to the door lock application.
- *
- * This function processes various events that are specific to the door lock application.
- * It is responsible for handling events such as door handle activation, deactivation,
- * and other door lock related events.
- *
- * @param event The event to be handled. This parameter is of type `EVENT_APP_DOOR_LOCK`.
- *
- * @return void
- *
- * @note This function is specific to the door lock application and is not intended to be
- *       used for other applications.
- */
-static void door_lock_app_event_handler(const uint8_t event, const void *data)
-{
-  switch (event) {
-    case CC_DOOR_LOCK_EVENT_OPERATION_SET_DONE:
-    {
-      zaf_event_distributor_enqueue_cc_event(COMMAND_CLASS_SUPERVISION, CC_SUPERVISION_EVENT_SUCCESS, data);
-      break;
-    }
-  }
-}
-
-ZAF_EVENT_DISTRIBUTOR_REGISTER_CC_EVENT_HANDLER(COMMAND_CLASS_USER_CODE, user_code_app_event_handler);
-ZAF_EVENT_DISTRIBUTOR_REGISTER_CC_EVENT_HANDLER(COMMAND_CLASS_DOOR_LOCK, door_lock_app_event_handler);
