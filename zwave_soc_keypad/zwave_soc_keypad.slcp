@@ -16,7 +16,7 @@ filter:
 package: zwave_sample_app
 quality: production
 readme:
-- {path: README.md}
+- {path: ../README.md}
 source:
 - {path: app.c}
 - {path: app_keypad.c}
