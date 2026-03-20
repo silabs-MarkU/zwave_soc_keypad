@@ -14,4 +14,5 @@ autogen/
 artifact/
 trashed_modified_files/
 *.md
+!README.md
 *.DS_Store
