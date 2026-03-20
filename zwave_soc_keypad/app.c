@@ -1,5 +1,5 @@
 /**
- * Z-Wave Certified Application Door Lock Key Pad
+ * Z-Wave keypad proof-of-concept application.
  *
  * @copyright 2018 Silicon Laboratories Inc.
  */
@@ -22,13 +22,13 @@
 #include "events.h"
 #include "zpal_watchdog.h"
 #include "board_indicator.h"
-#include "app_credentials.h"
 #include "ZAF_ApplicationEvents.h"
 #include "zaf_event_distributor_soc.h"
 #include "zpal_misc.h"
 #include "zaf_protocol_config.h"
 #include "ZAF_PrintAppInfo.h"
-#include "ZW_TransportEndpoint.h" // Add this for ENDPOINT_ROOT and other defs -Mark U.
+#include "ZW_TransportEndpoint.h"
+#include "app_keypad.h"
 
 #if defined(SL_COMPONENT_CATALOG_PRESENT)
 #include "sl_component_catalog.h"
@@ -47,7 +47,6 @@ static SSwTimer BatteryCheckTimer;
 
 void ApplicationTask(SApplicationHandles* pAppHandles);
 void ZCB_BatteryCheckTimerCallback(SSwTimer *pTimer);
-void CredentialLearnTimerCallback(SSwTimer *pTimer);
 
 /**
  * @brief See description for function prototype in ZW_basis_api.h.
@@ -118,15 +117,14 @@ ApplicationTask(SApplicationHandles* pAppHandles)
   AppTimerRegister(&BatteryCheckTimer, true, ZCB_BatteryCheckTimerCallback);
   TimerStart(&BatteryCheckTimer, PERIODIC_BATTERY_CHECKING_INTERVAL_MINUTES * 60 * 1000);
 
-  // User Credential Command Class related functions
-  credentials_init();
+  app_keypad_init();
 
   /* Enter SmartStart*/
   /* Protocol will commence SmartStart only if the node is NOT already included in the network */
   ZAF_setNetworkLearnMode(E_NETWORK_LEARN_MODE_INCLUSION_SMARTSTART);
 
-  // Wait for and process events
-  ZPAL_LOG_DEBUG(ZPAL_LOG_APP, "DoorLockKeyPad Event processor Started\r\n");
+  /* Main event loop: wait for and process events. */
+  ZPAL_LOG_DEBUG(ZPAL_LOG_APP, "Keypad POC event processor started\r\n");
   for (;;) {
     unhandledEvents = zaf_event_distributor_distribute();
     if (0 != unhandledEvents) {
@@ -164,15 +162,14 @@ zaf_event_distributor_app_event_manager(const uint8_t event)
         send_battery_level_report();
       }
       break;
-    case EVENT_SYSTEM_LEARNMODE_FINISHED:
+    case EVENT_APP_KEYPAD_PROCESS:
     {
-      initialize_user_credential_database();
+      app_keypad_process_event();
       break;
     }
-    case EVENT_APP_CREDENTIAL_LEARN_START:
+    case EVENT_APP_KEYPAD_TIMEOUT:
     {
-      // The Credential Learn process has started
-      request_credential_from_user();
+      app_keypad_process_timeout_event();
       break;
     }
     default:
@@ -195,21 +192,4 @@ ZCB_BatteryCheckTimerCallback(__attribute__((unused)) SSwTimer *pTimer)
   if (false == zaf_event_distributor_enqueue_app_event(EVENT_APP_PERIODIC_BATTERY_CHECK_TRIGGER)) {
     ZPAL_LOG_ERROR(ZPAL_LOG_APP, "\r\n** Periodic battery checking trigger FAILED\r\n");
   }
-}
-
-// Weak functions for non-user credential application
-ZW_WEAK void credentials_init(void)
-{
-}
-
-ZW_WEAK void initialize_user_credential_database(void)
-{
-}
-
-ZW_WEAK void request_credential_from_user(void)
-{
-}
-
-ZW_WEAK void user_credential_app_event_handler(__attribute__((unused)) const uint8_t event, __attribute__((unused)) const void *data)
-{
 }

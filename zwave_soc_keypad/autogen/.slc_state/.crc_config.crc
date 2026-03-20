@@ -13,6 +13,7 @@ cc_firmware_update_config.h=-1047231591
 cc_supervision_config.h=-976758468
 cc_user_code_config.h=1330668902
 dmadrv_config.h=281221886
+keyscan_driver_config.h=-353147402
 nvm3_default_config.h=-951198080
 psa_crypto_config.h=276209576
 sample_keys/sample_encrypt.key=1532269633

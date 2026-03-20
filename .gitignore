@@ -14,4 +14,4 @@ autogen/
 artifact/
 trashed_modified_files/
 *.md
-*.png
+*.DS_Store

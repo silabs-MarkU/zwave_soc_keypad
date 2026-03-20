@@ -12,6 +12,8 @@
 #include "sl_gpio.h"
 #include "gpiointerrupt.h"
 #include "sl_iostream_init_eusart_instances.h"
+#include "app_keypad.h"
+#include "keyscan_driver.h"
 #include "sl_mbedtls.h"
 #include "sl_simple_button_instances.h"
 #include "sl_simple_led_instances.h"
@@ -67,6 +69,7 @@ void sl_driver_init(void)
   sl_debug_swo_init();
   sl_gpio_init();
   GPIOINT_Init();
+  app_keypad_keyscan_platform_init();
   sl_simple_button_init_instances();
   sl_simple_led_init_instances();
   sl_cos_send_config();
@@ -110,4 +113,3 @@ void sl_iostream_init_instances_stage_2(void)
 {
   sl_iostream_set_console_instance();
 }
-

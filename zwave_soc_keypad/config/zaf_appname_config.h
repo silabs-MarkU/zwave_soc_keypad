@@ -21,7 +21,7 @@
 
 // <s.29 ZAF_APP_NAME> Application Name
 // <d> "zwave_application"
-#define ZAF_APP_NAME  "door_lock_keypad"
+#define ZAF_APP_NAME  "Keypad Proof of Concept"
 
 // </h>
 
