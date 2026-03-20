@@ -30,6 +30,7 @@
 #define APP_KEYPAD_EVENT_TYPE_MASK_LENGTH          (4U)
 #define APP_KEYPAD_NOTIFICATION_MAX_DATA_LENGTH    (32U)
 #define APP_KEYPAD_NOTIFICATION_HEADER_LENGTH      (4U)
+#define APP_KEYPAD_ENTRY_CONTROL_CC_ENABLED        (0U)
 #define APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED     (0U)
 #define APP_KEYPAD_KEYSCAN_SCAN_ENABLED            (0U)
 
@@ -101,10 +102,11 @@ static JOB_STATUS app_keypad_send_notification(uint8_t event_type,
                                                uint8_t event_data_length,
                                                bool use_ascii_encoding);
 static void app_keypad_notification_callback(TRANSMISSION_RESULT *pTransmissionResult);
-static uint8_t app_keypad_lifeline_reporting(ccc_pair_t *p_ccc_pair);
-static received_frame_status_t app_keypad_command_class_handler(cc_handler_input_t *input,
-                                                                cc_handler_output_t *output);
-static void app_keypad_reset(void);
+static uint8_t __attribute__((unused)) app_keypad_lifeline_reporting(ccc_pair_t *p_ccc_pair);
+static received_frame_status_t __attribute__((unused))
+app_keypad_command_class_handler(cc_handler_input_t *input,
+                                 cc_handler_output_t *output);
+static void __attribute__((unused)) app_keypad_reset(void);
 #if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
 static sl_keyscan_driver_process_keyscan_event_handle_t s_keyscan_event_handle = {
   .on_event = app_keypad_keyscan_event_callback
@@ -304,7 +306,7 @@ app_keypad_build_configuration_report(cc_handler_output_t *output)
   output->length = sizeof(ZW_ENTRY_CONTROL_CONFIGURATION_REPORT_FRAME);
 }
 
-static received_frame_status_t
+static received_frame_status_t __attribute__((unused))
 app_keypad_command_class_handler(cc_handler_input_t *input, cc_handler_output_t *output)
 {
   switch (input->frame->ZW_Common.cmd) {
@@ -498,7 +500,7 @@ app_keypad_process_key(app_keypad_key_t key)
   }
 }
 
-static uint8_t
+static uint8_t __attribute__((unused))
 app_keypad_lifeline_reporting(ccc_pair_t *p_ccc_pair)
 {
   p_ccc_pair->cmdClass = COMMAND_CLASS_ENTRY_CONTROL;
@@ -506,7 +508,7 @@ app_keypad_lifeline_reporting(ccc_pair_t *p_ccc_pair)
   return 1U;
 }
 
-static void
+static void __attribute__((unused))
 app_keypad_reset(void)
 {
   app_keypad_apply_default_config();
@@ -652,6 +654,7 @@ app_keypad_key_name(app_keypad_key_t key)
   return s_key_names[key];
 }
 
+#if APP_KEYPAD_ENTRY_CONTROL_CC_ENABLED
 REGISTER_CC_V5(COMMAND_CLASS_ENTRY_CONTROL,
                ENTRY_CONTROL_VERSION,
                app_keypad_command_class_handler,
@@ -661,3 +664,4 @@ REGISTER_CC_V5(COMMAND_CLASS_ENTRY_CONTROL,
                0,
                NULL,
                app_keypad_reset);
+#endif
