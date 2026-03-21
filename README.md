@@ -11,10 +11,12 @@ This repository captures the conversion of the Silicon Labs `ZWave_SoC_DoorLockK
 
 The project is derived from the Silicon Labs door-lock keypad sample, but it is now modeled as a secure keypad rather than a lock. Lock, and credential-specific behavior was removed because it is not part of the keypad device model used here.
 
+The `COMMAND_CLASS_ENTRY_CONTROL` implementation in this project was written from the Z-Wave Alliance Application Specification PDF `zwave specifications_3828_1.pdf`, using the Entry Control Command Class section as the primary reference.
+
 Current implementation:
 
 - Node type changed to Entry Control / Secure Keypad
-- Entry Control command handling is implemented
+- Entry Control command handling was written from the Alliance specification
 - keypad input is cached locally and reported through Entry Control notifications
 - Keypad configuration is stored in NVM
 - CLI simulation is available for pre-hardware validation
@@ -49,11 +51,42 @@ The external keypad used for this proof of concept is the 20-key 4x5 membrane ke
 
 - Amazon reference: <https://www.amazon.com/dp/B07QH6JB23?ref=ppx_yo2ov_dt_b_fed_asin_title>
 - Product family: generic `4x5` / `20-key` membrane matrix keypad
-- Cable: `9`-conductor tail
+- Cable: linear `1x9`, `0.1 in` pitch tail
 
 Keypad reference image:
 
 ![Amazon keypad reference](zwave_soc_keypad/docs/images/keypad-amazon-reference.png)
+
+Measured keypad tail pinout used in this project:
+
+- Tail pin numbering is left-to-right with `pin 1` at the top-left of the keypad above `F1`
+- Tail pins `1-4` form the `4`-line group
+- Tail pins `5-9` form the `5`-line group
+
+Measured switch closures:
+
+| Key | Pins |
+| --- | --- |
+| `F1` | `1-9` |
+| `1` | `1-8` |
+| `4` | `1-7` |
+| `7` | `1-6` |
+| `Left` | `1-5` |
+| `F2` | `2-9` |
+| `2` | `2-8` |
+| `5` | `2-7` |
+| `8` | `2-6` |
+| `0` | `2-5` |
+| `#` | `3-9` |
+| `3` | `3-8` |
+| `6` | `3-7` |
+| `9` | `3-6` |
+| `Right` | `3-5` |
+| `*` | `4-9` |
+| `Up` | `4-8` |
+| `Down` | `4-7` |
+| `Esc` | `4-6` |
+| `Ent` | `4-5` |
 
 ## WSTK Buttons
 
@@ -72,6 +105,11 @@ Current WSTK button behavior:
 ## Entry Control Behavior
 
 The keypad caches input locally and reports it through Entry Control notifications.
+
+Implementation reference:
+
+- Z-Wave Alliance Application Specification: `zwave specifications_3828_1.pdf`
+- The Entry Control Command Class behavior in this project was written from that specification
 
 - `Key Cache Size = 1` is valid if per-key reporting is desired.
 - Current default: `Key Cache Size = 4`, `Key Cache Timeout = 2 seconds`
@@ -109,37 +147,110 @@ Bitmask note for `Entry Control Key Supported Report`:
 
 ## Hardware Plan
 
-A `4x5` keypad requires `9` signals total. On EFR32ZG23, `KEYSCAN.ROW_SENSE_x` only routes on ports `A` and `B`, so the `4`-line dimension should be assigned to `ROW_SENSE`.
+A `4x5` keypad requires `9` signals total. For this keypad tail, the `4`-line side (`pins 1-4`) is used as `ROW_SENSE`, and the `5`-line side (`pins 5-9`) is used as `COL_OUT`.
 
 - KEYSCAN rows: `4`
 - KEYSCAN columns: `5`
+- For this keypad tail, pins `1-4` should be assigned to `ROW_SENSE`
+- For this keypad tail, pins `5-9` should be assigned to `COL_OUT`
 
-### Recommended BRD4210A Expansion-Header Wiring
+Use the large solderable breakout headers on the `BRD4002A` mainboard, not the small `EXP` header.
 
-| Function | GPIO | Expansion Pin |
-| --- | --- | --- |
-| Row 0 | `PA10` | `3` |
-| Row 1 | `PA0` | `5` |
-| Row 2 | `PA5` | `7` |
-| Row 3 | `PA6` | `11` |
-| Col 0 | `PD2` | `9` |
-| Col 1 | `PC0` | `10` |
-| Col 2 | `PA7` | `13` |
-| Col 3 | `PC5` | `15` |
-| Col 4 | `PC7` | `16` |
+Breakout-header findings:
 
-- VCOM TX/RX on EXP pins `12` and `14` stay available.
-- VCOM CTS/RTS on EXP pins `3` and `5` are consumed.
-- The onboard sensor I2C pins `15` and `16` are repurposed.
-- EXP pins `4`, `6`, and `8` are avoided.
+- The `BRD4210A` radio board breaks out all EFR32ZG23 GPIO except `PD0` and `PD1`.
+- The keypad tail is a straight `1x9` connector, but there is no single straight `1x9` row of usable, non-conflicting GPIO on the breakout headers.
+- A small adapter, breakout, or flying-lead harness is still required.
+
+### Recommended Breakout-Header Harness
+
+This is the best `9`-wire breakout-only mapping that preserves `VCOM`, `SWD`, `BTN0`, `BTN1`, and `LED0` while still giving a practical KEYSCAN matrix:
+
+| Keypad Tail Pin | Matrix Role | GPIO | Breakout Pad | Shared Board Function |
+| --- | --- | --- | --- | --- |
+| `1` | `ROW_SENSE0` | `PA4` | `WSTK_P14` | `DBG_TDI`, `DEBUG_TRACECLK` |
+| `2` | `ROW_SENSE1` | `PA5` | `WSTK_P4` | `EXP7`, `DEBUG_TRACED1` |
+| `3` | `ROW_SENSE2` | `PA6` | `WSTK_P8` | `EXP11`, `DEBUG_TRACED2` |
+| `4` | `ROW_SENSE3` | `PA7` | `WSTK_P10` | `EXP13`, `DEBUG_TRACED3` |
+| `5` | `COL_OUT0` | `PC0` | `WSTK_P7` | `EXP10`, `US1_CS` |
+| `6` | `COL_OUT1` | `PC2` | `WSTK_P3` | `EXP6`, `US1_RX` |
+| `7` | `COL_OUT2` | `PC3` | `WSTK_P5` | `EXP8`, `US1_CLK`, `DISP_SCLK` |
+| `8` | `COL_OUT3` | `PC5` | `WSTK_P12` | `EXP15`, `I2C0_SCL` |
+| `9` | `COL_OUT4` | `PC7` | `WSTK_P13` | `EXP16`, `I2C0_SDA` |
+
+This harness preserves:
+
+- `VCOM_ENABLE` on `PB0`
+- `VCOM_RTS` on `PA0`
+- `VCOM_TX` on `PA8`
+- `VCOM_RX` on `PA9`
+- `VCOM_CTS` on `PA10`
+- SWD on `PA1` / `PA2`
+- `BTN0` on `PB1`
+- `LED0` on `PB2`
+- `BTN1` on `PB3`
+
+This harness repurposes:
+
+- JTAG / trace-related signals on `PA4` through `PA7`
+- Secondary display, expansion-serial, and expansion-I2C-related signals on `PC0`, `PC2`, `PC3`, `PC5`, and `PC7`
+
+### EM2 Wake Strategy
+
+`EFR32ZG23` low-energy GPIO behavior matters here:
+
+- Ports `A` and `B` are EM2-capable GPIO.
+- Ports `C` and `D` are retained / latched through EM2.
+- `KEYSCAN` itself supports wake-on-keypress down to `EM3`.
+
+With `VCOM`, `SWD`, and the WSTK buttons preserved, there are only `6` free `A/B` GPIO left on this board:
+
+- `PA3`
+- `PA4`
+- `PA5`
+- `PA6`
+- `PA7`
+- `PB2`
+
+That is not enough to place all `9` keypad lines on `A/B` pins. Because of that, there is no breakout-only pin assignment that keeps all `9` keypad wires on EM2-capable pads while also preserving `VCOM`, `SWD`, and the WSTK buttons.
+
+The recommended low-energy approach is:
+
+1. Use the `A`-port row pins (`PA4` through `PA7`) as the wake-detect lines.
+2. Before entering EM2, temporarily drive the column pins (`PC0`, `PC2`, `PC3`, `PC5`, `PC7`) low as normal GPIO outputs.
+3. Configure the row pins as `input pull-up` GPIO with falling-edge interrupts.
+4. Any key press will pull one row low and wake the device.
+5. After wake, restore all `9` pins to `KEYSCAN` routing and scan the matrix to determine the exact key.
+
+This keeps exact key detection available after wake while preserving the kit functions listed above.
 
 ### KEYSCAN Configuration
 
 - `SL_KEYSCAN_DRIVER_COLUMN_NUMBER = 5`
 - `SL_KEYSCAN_DRIVER_ROW_NUMBER = 4`
-- `SL_KEYSCAN_DRIVER_SINGLEPRESS = 1`
-- `SL_KEYSCAN_DRIVER_DEBOUNCE_DELAY_MS = 2` or `4`
-- `SL_KEYSCAN_DRIVER_STABLE_DELAY_MS = 2`
+- `ROW_SENSE_0 = PA4`
+- `ROW_SENSE_1 = PA5`
+- `ROW_SENSE_2 = PA6`
+- `ROW_SENSE_3 = PA7`
+- `COL_OUT_0 = PC0`
+- `COL_OUT_1 = PC2`
+- `COL_OUT_2 = PC3`
+- `COL_OUT_3 = PC5`
+- `COL_OUT_4 = PC7`
+
+Active KEYSCAN GPIO behavior is already handled by the Silicon Labs driver:
+
+- `COL_OUT_x` pins are configured as `wired-and` outputs with default value `1`
+- `ROW_SENSE_x` pins are configured as `input pull-up`
+
+Active KEYSCAN interrupts already used by the driver:
+
+- `KEYSCAN_IF_WAKEUP`
+- `KEYSCAN_IF_KEY`
+- `KEYSCAN_IF_NOKEY`
+- `KEYSCAN_IF_SCANNED`
+
+The additional falling-edge GPIO interrupts on `PA4` through `PA7` are part of the later EM2 sleep / wake handoff, not part of the normal KEYSCAN pin-tool routing.
 
 Pin routing should be done in the Simplicity Configurator / pin tool, not by hand-editing the `.pintool` file. During bring-up, it is valid to keep KEYSCAN inactive until build, flash, and debug behavior are confirmed.
 
@@ -158,13 +269,14 @@ Recommended checks:
 - `Entry Control Configuration Set`
   - verify the node accepts valid values and returns them through `Configuration Get`
 
-Physical key notifications require final pin-tool routing, KEYSCAN enable, and matrix-position-to-logical-key mapping.
+Physical key notifications require final pin-tool routing, KEYSCAN enable, EM2 wake handoff, and matrix-position-to-logical-key mapping.
 
 ## Remaining Work
 
-1. Finish the pin-tool assignments.
-2. Add the real KEYSCAN callback implementation.
-3. Build the matrix-position-to-logical-key table for the actual keypad tail pinout.
-4. Verify the physical wiring on the BRD4210A expansion header.
-5. Add local indicator or buzzer feedback for key accepted, cancel, and transmit failure.
-6. Run inclusion and interview testing and confirm Entry Control reports, configuration behavior, and lifeline notification delivery.
+1. Finish the pin-tool assignments listed above.
+2. Add the EM2 wake handoff using `PA4` through `PA7` as row wake pins before sleep.
+3. Add the real KEYSCAN callback implementation.
+4. Build the matrix-position-to-logical-key table for the actual keypad tail pinout.
+5. Verify the physical wiring on the `BRD4002A` breakout headers.
+6. Add local indicator or buzzer feedback for key accepted, cancel, and transmit failure.
+7. Run inclusion and interview testing and confirm Entry Control reports, configuration behavior, and lifeline notification delivery.
