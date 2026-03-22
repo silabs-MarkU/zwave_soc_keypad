@@ -273,10 +273,12 @@ Physical key notifications require final pin-tool routing, KEYSCAN enable, EM2 w
 
 ## Remaining Work
 
-1. Finish the pin-tool assignments listed above.
+Pin-tool routing has been completed and the project has already been rebuilt, flashed, and smoke-tested after the hardware-assignment change. The remaining work is:
+
+1. Solder and verify the physical keypad wiring on the `BRD4002A` breakout headers.
 2. Add the EM2 wake handoff using `PA4` through `PA7` as row wake pins before sleep.
-3. Add the real KEYSCAN callback implementation.
-4. Build the matrix-position-to-logical-key table for the actual keypad tail pinout.
-5. Verify the physical wiring on the `BRD4002A` breakout headers.
+3. Add the real `KEYSCAN` callback implementation.
+4. Build the matrix-position-to-logical-key table for the measured keypad tail pinout.
+5. Run physical keypress testing and confirm the expected Entry Control notifications over Z-Wave.
 6. Add local indicator or buzzer feedback for key accepted, cancel, and transmit failure.
-7. Run inclusion and interview testing and confirm Entry Control reports, configuration behavior, and lifeline notification delivery.
+7. Re-run inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
