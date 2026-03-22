@@ -178,6 +178,45 @@ This is the best `9`-wire breakout-only mapping that preserves `VCOM`, `SWD`, `B
 | `8` | `COL_OUT3` | `PC5` | `WSTK_P12` | `EXP15`, `I2C0_SCL` |
 | `9` | `COL_OUT4` | `PC7` | `WSTK_P13` | `EXP16`, `I2C0_SDA` |
 
+### Soldering Schematic
+
+The keypad tail is a linear `1x9` connector. For this README, `pin 1` is the leftmost tail conductor when viewing the keypad from the front, with the tail exiting from the upper-left side of the keypad.
+
+Use a flying-lead harness from the keypad tail to the `BRD4002A` breakout pads:
+
+```text
+Keypad tail                            BRD4002A / EFR32ZG23
+-----------                            --------------------
+pin 1  ------------------------------> WSTK_P14 / PA4  / ROW_SENSE_0
+pin 2  ------------------------------> WSTK_P4  / PA5  / ROW_SENSE_1
+pin 3  ------------------------------> WSTK_P8  / PA6  / ROW_SENSE_2
+pin 4  ------------------------------> WSTK_P10 / PA7  / ROW_SENSE_3
+
+pin 5  ------------------------------> WSTK_P7  / PC0  / COL_OUT_0
+pin 6  ------------------------------> WSTK_P3  / PC2  / COL_OUT_1
+pin 7  ------------------------------> WSTK_P5  / PC3  / COL_OUT_2
+pin 8  ------------------------------> WSTK_P12 / PC5  / COL_OUT_3
+pin 9  ------------------------------> WSTK_P13 / PC7  / COL_OUT_4
+```
+
+Key group reference for each tail conductor:
+
+| Tail Pin | Keys On That Line | Final Signal |
+| --- | --- | --- |
+| `1` | `F1`, `1`, `4`, `7`, `Left` | `ROW_SENSE_0` |
+| `2` | `F2`, `2`, `5`, `8`, `0` | `ROW_SENSE_1` |
+| `3` | `#`, `3`, `6`, `9`, `Right` | `ROW_SENSE_2` |
+| `4` | `*`, `Up`, `Down`, `Esc`, `Ent` | `ROW_SENSE_3` |
+| `5` | `Left`, `0`, `Right`, `Ent` | `COL_OUT_0` |
+| `6` | `7`, `8`, `9`, `Esc` | `COL_OUT_1` |
+| `7` | `4`, `5`, `6`, `Down` | `COL_OUT_2` |
+| `8` | `1`, `2`, `3`, `Up` | `COL_OUT_3` |
+| `9` | `F1`, `F2`, `#`, `*` | `COL_OUT_4` |
+
+Electrical note:
+
+- The pressed key contact resistance measured on the keypad is low enough for the planned `KEYSCAN` wiring and does not change the recommended pin assignment.
+
 This harness preserves:
 
 - `VCOM_ENABLE` on `PB0`
