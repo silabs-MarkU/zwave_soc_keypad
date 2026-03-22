@@ -49,7 +49,7 @@ The original sample kept `Basic` because it was still a door-lock product and ma
 
 The external keypad used for this proof of concept is the 20-key 4x5 membrane keypad shown in the Amazon listing below:
 
-- Amazon reference: <https://www.amazon.com/dp/B07QH6JB23?ref=ppx_yo2ov_dt_b_fed_asin_title>
+- Amazon reference: <https://www.amazon.com/dp/B07QH6JB23>
 - Product family: generic `4x5` / `20-key` membrane matrix keypad
 - Cable: linear `1x9`, `0.1 in` pitch tail
 
@@ -282,3 +282,23 @@ Pin-tool routing has been completed and the project has already been rebuilt, fl
 5. Run physical keypress testing and confirm the expected Entry Control notifications over Z-Wave.
 6. Add local indicator or buzzer feedback for key accepted, cancel, and transmit failure.
 7. Re-run inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
+
+## Project Status Summary
+
+- [x] Created this keypad PoC from the current Silicon Labs `ZWave_SoC_DoorLockKeypad_Solution` sample, keeping the FLiRS framework, build flow, and WSTK service-button behavior as the project foundation.
+- [x] Wrote the Entry Control implementation from the Z-Wave Alliance Application Specification PDF `zwave specifications_3828_1.pdf`.
+- [x] Changed the device model to `GENERIC_TYPE_ENTRY_CONTROL` / `SPECIFIC_TYPE_SECURE_KEYPAD` and updated the keypad icons.
+- [x] Removed `Door Lock CC`, `User Code CC`, `User Credential CC`, and `Basic CC`.
+- [x] Kept the direct WSTK buttons for service actions such as learn mode, battery report, and factory reset.
+- [x] Added keypad caching, Entry Control notifications, and NVM-backed Entry Control configuration handling.
+- [x] Added CLI-based keypad simulation for pre-hardware validation.
+- [x] Integrated staged `KEYSCAN` support into the project.
+- [x] Measured the actual `1x9` keypad tail pinout and selected the breakout-header harness mapping.
+- [x] Completed the `KEYSCAN` Pin Tool routing for `PA4` through `PA7` rows and `PC0`, `PC2`, `PC3`, `PC5`, `PC7` columns.
+- [x] Rebuilt, flashed, and smoke-tested the project after the hardware-assignment change.
+- [x] Confirmed inclusion, exclusion, and initial controller interview behavior during staged bring-up.
+- [ ] Solder the keypad harness to the `BRD4002A` breakout headers and verify continuity on the final assembly.
+- [ ] Add the EM2 wake handoff using `PA4` through `PA7` as row wake lines before sleep.
+- [ ] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
+- [ ] Run physical keypress testing and verify lifeline notification delivery over Z-Wave.
+- [ ] Add local user feedback for key accepted, cancel, and transmit failure.
