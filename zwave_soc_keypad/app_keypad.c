@@ -9,7 +9,10 @@
 #include "CC_Common.h"
 #include "FreeRTOS.h"
 #include "keyscan_driver.h"
+#include "keyscan_driver_config.h"
 #include "queue.h"
+#include "sl_gpio.h"
+#include "sl_power_manager.h"
 #include "ZAF_nvm_app.h"
 #include "ZW_TransportEndpoint.h"
 #include "events.h"
@@ -30,8 +33,15 @@
 #define APP_KEYPAD_EVENT_TYPE_MASK_LENGTH          (4U)
 #define APP_KEYPAD_NOTIFICATION_MAX_DATA_LENGTH    (32U)
 #define APP_KEYPAD_NOTIFICATION_HEADER_LENGTH      (4U)
-#define APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED     (0U)
+#define APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED     (1U)
 #define APP_KEYPAD_KEYSCAN_SCAN_ENABLED            (0U)
+#define APP_KEYPAD_ROW_COUNT                       (4U)
+#define APP_KEYPAD_COLUMN_COUNT                    (5U)
+#define APP_KEYPAD_KEYSCAN_ROUTEEN_MASK            (GPIO_KEYSCAN_ROUTEEN_COLOUT0PEN \
+                                                    | GPIO_KEYSCAN_ROUTEEN_COLOUT1PEN \
+                                                    | GPIO_KEYSCAN_ROUTEEN_COLOUT2PEN \
+                                                    | GPIO_KEYSCAN_ROUTEEN_COLOUT3PEN \
+                                                    | GPIO_KEYSCAN_ROUTEEN_COLOUT4PEN)
 
 typedef struct {
   uint32_t magic;
@@ -58,6 +68,15 @@ static bool s_timer_registered = false;
 static bool s_initialized = false;
 #if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
 static bool s_keyscan_event_subscribed = false;
+static bool s_power_transition_subscribed = false;
+static bool s_em2_wake_mode_active = false;
+static volatile uint8_t s_pending_wake_row_mask = 0U;
+static int32_t s_row_interrupt_numbers[APP_KEYPAD_ROW_COUNT] = {
+  SL_GPIO_INTERRUPT_UNAVAILABLE,
+  SL_GPIO_INTERRUPT_UNAVAILABLE,
+  SL_GPIO_INTERRUPT_UNAVAILABLE,
+  SL_GPIO_INTERRUPT_UNAVAILABLE
+};
 #endif
 
 static const char *const s_key_names[] = {
@@ -83,6 +102,23 @@ static const char *const s_key_names[] = {
   "right"
 };
 
+#if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
+static const sl_gpio_t s_keyscan_column_gpios[APP_KEYPAD_COLUMN_COUNT] = {
+  { SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_0_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_0_PIN },
+  { SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_1_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_1_PIN },
+  { SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_2_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_2_PIN },
+  { SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_3_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_3_PIN },
+  { SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_4_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_COL_OUT_4_PIN }
+};
+
+static const sl_gpio_t s_keyscan_row_gpios[APP_KEYPAD_ROW_COUNT] = {
+  { SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_0_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_0_PIN },
+  { SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_1_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_1_PIN },
+  { SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_2_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_2_PIN },
+  { SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_3_PORT, SL_KEYSCAN_DRIVER_KEYSCAN_ROW_SENSE_3_PIN }
+};
+#endif
+
 static void app_keypad_apply_default_config(void);
 static void app_keypad_clear_cached_ascii(void);
 static void app_keypad_store_config(void);
@@ -93,8 +129,20 @@ static void app_keypad_process_key(app_keypad_key_t key);
 static void app_keypad_process_ascii_key(uint8_t ascii);
 static void app_keypad_process_command_key(uint8_t event_type);
 #if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
+static void app_keypad_power_transition_callback(sl_power_manager_em_t from,
+                                                 sl_power_manager_em_t to);
+static void app_keypad_enter_em2_wake_mode(void);
+static void app_keypad_leave_em2_wake_mode(void);
+static void app_keypad_disable_keyscan_column_routes(void);
+static void app_keypad_enable_keyscan_column_routes(void);
+static void app_keypad_row_wake_isr(uint8_t interrupt_number, void *context);
 static void app_keypad_keyscan_event_callback(uint8_t *p_keyscan_matrix,
                                               sl_keyscan_driver_status_t status);
+static const sl_power_manager_em_transition_event_info_t s_power_transition_event_info = {
+  .event_mask = SL_POWER_MANAGER_EVENT_TRANSITION_ENTERING_EM2
+                | SL_POWER_MANAGER_EVENT_TRANSITION_LEAVING_EM2,
+  .on_event = app_keypad_power_transition_callback
+};
 #endif
 static JOB_STATUS app_keypad_send_notification(uint8_t event_type,
                                                const uint8_t *event_data,
@@ -109,6 +157,7 @@ static void app_keypad_reset(void);
 static sl_keyscan_driver_process_keyscan_event_handle_t s_keyscan_event_handle = {
   .on_event = app_keypad_keyscan_event_callback
 };
+static sl_power_manager_em_transition_event_handle_t s_power_transition_event_handle;
 #endif
 
 static void
@@ -196,6 +245,109 @@ app_keypad_key_to_ascii(app_keypad_key_t key, uint8_t *ascii)
 }
 
 #if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
+static void
+app_keypad_disable_keyscan_column_routes(void)
+{
+  GPIO->KEYSCANROUTE.ROUTEEN &= ~APP_KEYPAD_KEYSCAN_ROUTEEN_MASK;
+}
+
+static void
+app_keypad_enable_keyscan_column_routes(void)
+{
+  GPIO->KEYSCANROUTE.ROUTEEN |= APP_KEYPAD_KEYSCAN_ROUTEEN_MASK;
+}
+
+static void
+app_keypad_enter_em2_wake_mode(void)
+{
+  if (s_em2_wake_mode_active) {
+    return;
+  }
+
+  (void)sl_keyscan_driver_stop_scan();
+  app_keypad_disable_keyscan_column_routes();
+
+  for (uint8_t column = 0U; column < APP_KEYPAD_COLUMN_COUNT; column++) {
+    sl_gpio_set_pin_mode(&s_keyscan_column_gpios[column], SL_GPIO_MODE_PUSH_PULL, 0);
+  }
+
+  for (uint8_t row = 0U; row < APP_KEYPAD_ROW_COUNT; row++) {
+    int32_t interrupt_number = SL_GPIO_INTERRUPT_UNAVAILABLE;
+
+    sl_gpio_set_pin_mode(&s_keyscan_row_gpios[row], SL_GPIO_MODE_INPUT_PULL, 1);
+    if (SL_STATUS_OK
+        != sl_gpio_configure_external_interrupt(&s_keyscan_row_gpios[row],
+                                                &interrupt_number,
+                                                SL_GPIO_INTERRUPT_FALLING_EDGE,
+                                                app_keypad_row_wake_isr,
+                                                (void *)(uintptr_t)row)) {
+      ZPAL_LOG_ERROR(ZPAL_LOG_APP,
+                     "Failed to arm keypad wake interrupt for row %u\n",
+                     row);
+      continue;
+    }
+
+    s_row_interrupt_numbers[row] = interrupt_number;
+  }
+
+  s_em2_wake_mode_active = true;
+}
+
+static void
+app_keypad_leave_em2_wake_mode(void)
+{
+  if (!s_em2_wake_mode_active) {
+    return;
+  }
+
+  for (uint8_t row = 0U; row < APP_KEYPAD_ROW_COUNT; row++) {
+    if (SL_GPIO_INTERRUPT_UNAVAILABLE != s_row_interrupt_numbers[row]) {
+      (void)sl_gpio_deconfigure_external_interrupt(s_row_interrupt_numbers[row]);
+      s_row_interrupt_numbers[row] = SL_GPIO_INTERRUPT_UNAVAILABLE;
+    }
+
+    sl_gpio_set_pin_mode(&s_keyscan_row_gpios[row], SL_GPIO_MODE_INPUT_PULL, 1);
+  }
+
+  for (uint8_t column = 0U; column < APP_KEYPAD_COLUMN_COUNT; column++) {
+    sl_gpio_set_pin_mode(&s_keyscan_column_gpios[column], SL_GPIO_MODE_WIRED_AND, 1);
+  }
+
+  app_keypad_enable_keyscan_column_routes();
+  s_em2_wake_mode_active = false;
+
+#if APP_KEYPAD_KEYSCAN_SCAN_ENABLED
+  (void)sl_keyscan_driver_start_scan();
+#endif
+}
+
+static void
+app_keypad_power_transition_callback(sl_power_manager_em_t from,
+                                     sl_power_manager_em_t to)
+{
+  if ((from != SL_POWER_MANAGER_EM2) && (to == SL_POWER_MANAGER_EM2)) {
+    app_keypad_enter_em2_wake_mode();
+    return;
+  }
+
+  if ((from == SL_POWER_MANAGER_EM2) && (to != SL_POWER_MANAGER_EM2)) {
+    app_keypad_leave_em2_wake_mode();
+  }
+}
+
+static void
+app_keypad_row_wake_isr(__attribute__((unused)) uint8_t interrupt_number,
+                        void *context)
+{
+  uintptr_t row = (uintptr_t)context;
+
+  if (row < APP_KEYPAD_ROW_COUNT) {
+    s_pending_wake_row_mask |= (uint8_t)(1U << row);
+  }
+
+  (void)zaf_event_distributor_enqueue_app_event_from_isr(EVENT_APP_KEYPAD_WAKE);
+}
+
 static void
 app_keypad_keyscan_event_callback(__attribute__((unused)) uint8_t *p_keyscan_matrix,
                                   __attribute__((unused)) sl_keyscan_driver_status_t status)
@@ -554,11 +706,17 @@ app_keypad_init(void)
     s_keyscan_event_subscribed = true;
   }
 
+  if (!s_power_transition_subscribed) {
+    sl_power_manager_subscribe_em_transition_event(&s_power_transition_event_handle,
+                                                   &s_power_transition_event_info);
+    s_power_transition_subscribed = true;
+  }
+
 #if APP_KEYPAD_KEYSCAN_SCAN_ENABLED
   (void)sl_keyscan_driver_start_scan();
 #else
   ZPAL_LOG_INFO(ZPAL_LOG_APP,
-                "KEYSCAN driver initialized but scan start is disabled until matrix routing is ready\n");
+                "KEYSCAN driver initialized; scan start is held off until matrix decoding is ready\n");
 #endif
 #else
   ZPAL_LOG_INFO(ZPAL_LOG_APP,
@@ -616,6 +774,29 @@ app_keypad_enqueue_text(const char *text)
   }
 
   return true;
+}
+
+void
+app_keypad_process_wake_event(void)
+{
+#if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
+  uint8_t wake_row_mask;
+
+  CORE_DECLARE_IRQ_STATE;
+
+  CORE_ENTER_CRITICAL();
+  wake_row_mask = s_pending_wake_row_mask;
+  s_pending_wake_row_mask = 0U;
+  CORE_EXIT_CRITICAL();
+
+  if (0U == wake_row_mask) {
+    return;
+  }
+
+  ZPAL_LOG_INFO(ZPAL_LOG_APP,
+                "Keypad EM2 wake detected, row mask=0x%02x\n",
+                wake_row_mask);
+#endif
 }
 
 void

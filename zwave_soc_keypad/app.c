@@ -156,6 +156,11 @@ zaf_event_distributor_app_event_manager(const uint8_t event)
       ZPAL_LOG_DEBUG(ZPAL_LOG_APP, "\r\nBattery Level report transmit (keypress trig)\r\n");
       send_battery_level_report();
       break;
+    case EVENT_APP_KEYPAD_WAKE:
+    {
+      app_keypad_process_wake_event();
+      break;
+    }
     case EVENT_APP_PERIODIC_BATTERY_CHECK_TRIGGER:
       /* Check the battery level and send a report to lifeline if required */
       if (cc_battery_check_level_changed()) {
