@@ -8,6 +8,7 @@
     <property object="GPIO" propertyId="ABPeripheral.included" value="true"/>
     <property object="KEYSCAN" propertyId="ABModule.selectedRequirement" value="keyscan%T%SL_KEYSCAN_DRIVER_KEYSCAN%T%keyscan_driver_config.h"/>
     <property object="KEYSCAN" propertyId="ABPeripheral.included" value="true"/>
+    <property object="PA01" propertyId="pin.name" value=""/>
     <property object="PA04" propertyId="pin.name" value=""/>
     <property object="PA05" propertyId="pin.name" value=""/>
     <property object="PA06" propertyId="pin.name" value=""/>
@@ -26,11 +27,15 @@
     <property object="PC04" propertyId="ABModule.selectedRequirement" value="gpio%T%SL_MX25_FLASH_SHUTDOWN_CS%T%sl_mx25_flash_shutdown_eusart_config.h"/>
     <property object="PC04" propertyId="pin.reserve" value="Reserved"/>
     <property object="PC05" propertyId="pin.name" value=""/>
+    <property object="PC06" propertyId="pin.name" value=""/>
     <property object="PC07" propertyId="pin.name" value=""/>
-    <property object="PC09" propertyId="ABModule.selectedRequirement" value="gpio%T%SL_BOARD_ENABLE_SENSOR_RHT%T%sl_board_control_config.h"/>
+    <property object="PC08" propertyId="pin.name" value=""/>
+    <property object="PC09" propertyId="ABModule.selectedRequirement" value="gpio%T%SL_BOARD_ENABLE_DISPLAY%T%sl_board_control_config.h"/>
     <property object="PC09" propertyId="pin.reserve" value="Reserved"/>
     <property object="PD03" propertyId="ABModule.selectedRequirement" value="gpio%T%SL_SIMPLE_LED_LED1%T%sl_simple_led_led1_config.h"/>
     <property object="PD03" propertyId="pin.reserve" value="Reserved"/>
+    <property object="PD04" propertyId="pin.name" value=""/>
+    <property object="PD05" propertyId="pin.name" value=""/>
     <property object="PORTIO" propertyId="portio.eusart0.enable.cts" value="Enabled"/>
     <property object="PORTIO" propertyId="portio.eusart0.enable.rts" value="Enabled"/>
     <property object="PORTIO" propertyId="portio.eusart0.enable.rx" value="Enabled"/>
@@ -48,11 +53,11 @@
     <property object="PORTIO" propertyId="portio.keyscan.enable.row_sense_1" value="Enabled"/>
     <property object="PORTIO" propertyId="portio.keyscan.enable.row_sense_2" value="Enabled"/>
     <property object="PORTIO" propertyId="portio.keyscan.enable.row_sense_3" value="Enabled"/>
-    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_0" value="32"/>
-    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_1" value="34"/>
-    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_2" value="35"/>
-    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_3" value="37"/>
-    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_4" value="39"/>
+    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_0" value="53"/>
+    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_1" value="52"/>
+    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_2" value="40"/>
+    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_3" value="38"/>
+    <property object="PORTIO" propertyId="portio.keyscan.location.col_out_4" value="32"/>
     <property object="PORTIO" propertyId="portio.keyscan.location.row_sense_0" value="4"/>
     <property object="PORTIO" propertyId="portio.keyscan.location.row_sense_1" value="5"/>
     <property object="PORTIO" propertyId="portio.keyscan.location.row_sense_2" value="6"/>
