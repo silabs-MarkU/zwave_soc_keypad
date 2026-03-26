@@ -359,11 +359,11 @@ This checklist is intended to show both how the project was created and what wor
 - [x] Integrated staged `KEYSCAN` support and the EM2 wake handoff into the project.
 - [x] Measured the actual `1x9` keypad tail pinout and selected the final mixed harness mapping.
 - [x] Confirmed inclusion, exclusion, and initial controller interview behavior during staged bring-up.
-- [ ] Remap the final `KEYSCAN` routing in Pin Tool for the mixed harness and regenerate the project.
-- [ ] Rebuild, flash, and smoke-test after the final Pin Tool remap.
+- [x] Remap the final `KEYSCAN` routing in Pin Tool for the mixed harness and regenerate the project.
+- [x] Rebuild, flash, and smoke-test after the final Pin Tool remap.
 - [ ] Solder the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10` and verify continuity on the final assembly.
 - [ ] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
-- [ ] Exercise the existing EM2 wake handoff and verify the expected row-wake behavior.
+- [x] Exercise the existing EM2 wake handoff and verify the expected row-wake behavior.
 - [ ] Run physical keypress testing and verify lifeline notification delivery over Z-Wave.
 - [ ] Add local user feedback for key accepted, cancel, and transmit failure.
 - [ ] Re-run inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
