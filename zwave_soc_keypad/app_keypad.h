@@ -32,6 +32,7 @@ void app_keypad_init(void);
 bool app_keypad_enqueue_key(app_keypad_key_t key);
 bool app_keypad_enqueue_key_from_isr(app_keypad_key_t key);
 bool app_keypad_enqueue_text(const char *text);
+void app_keypad_process_wake_event(void);
 void app_keypad_process_event(void);
 void app_keypad_process_timeout_event(void);
 const char *app_keypad_key_name(app_keypad_key_t key);

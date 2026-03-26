@@ -100,7 +100,7 @@ template_contribution:
     handler: cli_keypad_text
     help: Queue keypad ASCII text
     argument:
-    - {type: string, help: Digits plus * and #}
+    - {type: string, help: 'Digits plus * and #'}
 provides:
 - {name: zwave_sample_application}
 - {name: zwave_soc_entry_control_keypad}

@@ -97,6 +97,78 @@
 // [LCD]$
 
 // $[KEYSCAN]
+// KEYSCAN COL_OUT_0 on PD05
+#ifndef KEYSCAN_COL_OUT_0_PORT                  
+#define KEYSCAN_COL_OUT_0_PORT                   SL_GPIO_PORT_D
+#endif
+#ifndef KEYSCAN_COL_OUT_0_PIN                   
+#define KEYSCAN_COL_OUT_0_PIN                    5
+#endif
+
+// KEYSCAN COL_OUT_1 on PD04
+#ifndef KEYSCAN_COL_OUT_1_PORT                  
+#define KEYSCAN_COL_OUT_1_PORT                   SL_GPIO_PORT_D
+#endif
+#ifndef KEYSCAN_COL_OUT_1_PIN                   
+#define KEYSCAN_COL_OUT_1_PIN                    4
+#endif
+
+// KEYSCAN COL_OUT_2 on PC08
+#ifndef KEYSCAN_COL_OUT_2_PORT                  
+#define KEYSCAN_COL_OUT_2_PORT                   SL_GPIO_PORT_C
+#endif
+#ifndef KEYSCAN_COL_OUT_2_PIN                   
+#define KEYSCAN_COL_OUT_2_PIN                    8
+#endif
+
+// KEYSCAN COL_OUT_3 on PC06
+#ifndef KEYSCAN_COL_OUT_3_PORT                  
+#define KEYSCAN_COL_OUT_3_PORT                   SL_GPIO_PORT_C
+#endif
+#ifndef KEYSCAN_COL_OUT_3_PIN                   
+#define KEYSCAN_COL_OUT_3_PIN                    6
+#endif
+
+// KEYSCAN COL_OUT_4 on PC00
+#ifndef KEYSCAN_COL_OUT_4_PORT                  
+#define KEYSCAN_COL_OUT_4_PORT                   SL_GPIO_PORT_C
+#endif
+#ifndef KEYSCAN_COL_OUT_4_PIN                   
+#define KEYSCAN_COL_OUT_4_PIN                    0
+#endif
+
+// KEYSCAN ROW_SENSE_0 on PA04
+#ifndef KEYSCAN_ROW_SENSE_0_PORT                
+#define KEYSCAN_ROW_SENSE_0_PORT                 SL_GPIO_PORT_A
+#endif
+#ifndef KEYSCAN_ROW_SENSE_0_PIN                 
+#define KEYSCAN_ROW_SENSE_0_PIN                  4
+#endif
+
+// KEYSCAN ROW_SENSE_1 on PA05
+#ifndef KEYSCAN_ROW_SENSE_1_PORT                
+#define KEYSCAN_ROW_SENSE_1_PORT                 SL_GPIO_PORT_A
+#endif
+#ifndef KEYSCAN_ROW_SENSE_1_PIN                 
+#define KEYSCAN_ROW_SENSE_1_PIN                  5
+#endif
+
+// KEYSCAN ROW_SENSE_2 on PA06
+#ifndef KEYSCAN_ROW_SENSE_2_PORT                
+#define KEYSCAN_ROW_SENSE_2_PORT                 SL_GPIO_PORT_A
+#endif
+#ifndef KEYSCAN_ROW_SENSE_2_PIN                 
+#define KEYSCAN_ROW_SENSE_2_PIN                  6
+#endif
+
+// KEYSCAN ROW_SENSE_3 on PA07
+#ifndef KEYSCAN_ROW_SENSE_3_PORT                
+#define KEYSCAN_ROW_SENSE_3_PORT                 SL_GPIO_PORT_A
+#endif
+#ifndef KEYSCAN_ROW_SENSE_3_PIN                 
+#define KEYSCAN_ROW_SENSE_3_PIN                  7
+#endif
+
 // [KEYSCAN]$
 
 // $[LETIMER0]
