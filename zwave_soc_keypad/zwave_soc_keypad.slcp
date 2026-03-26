@@ -71,6 +71,7 @@ component:
 - {package: simplicity_sdk, vendor: silabs, id: zw_cc_version}
 - {package: simplicity_sdk, vendor: silabs, id: zw_cc_zwaveplusinfo}
 - {package: simplicity_sdk, vendor: silabs, id: zw_core}
+- {package: simplicity_sdk, vendor: silabs, id: zw_debug}
 - {package: simplicity_sdk, vendor: silabs, id: zw_ota}
 - {package: simplicity_sdk, vendor: silabs, id: zw_role_type_sleeping_listening}
 - {package: simplicity_sdk, vendor: silabs, id: zw_true_status}
@@ -171,3 +172,4 @@ ui_hints:
   - {path: README.md, focus: true}
 post_build:
 - {path: zwave_soc_keypad.slpb, profile: zwave_application}
+

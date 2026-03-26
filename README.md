@@ -176,11 +176,11 @@ This is the cleanest `9`-wire mapping that preserves `VCOM`, `SWD`, `BTN0`, `BTN
 | `2` | `ROW_SENSE1` | `PA5` | `P43` breakout pad | `DEBUG_TRACED1` |
 | `3` | `ROW_SENSE2` | `PA6` | `P44` breakout pad | `DEBUG_TRACED2` |
 | `4` | `ROW_SENSE3` | `PA7` | `P45` breakout pad | `DEBUG_TRACED3` |
-| `5` | `COL_OUT0` | `PD5` | `P24` breakout pad | `PTI_SYNC`, `F19` |
-| `6` | `COL_OUT1` | `PD4` | `P25` breakout pad | `PTI_DATA`, `F20` |
-| `7` | `COL_OUT2` | `PC8` | `P31` breakout pad | `DISP_SCS` |
-| `8` | `COL_OUT3` | `PC6` | `P33` breakout pad | `DISP_EXTCOMIN` |
-| `9` | `COL_OUT4` | `PC0` | `EXP10` on the small `EXP` header | `US1_CS` |
+| `5` | `COL_OUT0` | `PC0` | `EXP10` on the small `EXP` header | `US1_CS` |
+| `6` | `COL_OUT1` | `PD5` | `P24` breakout pad | `PTI_SYNC`, `F19` |
+| `7` | `COL_OUT2` | `PD4` | `P25` breakout pad | `PTI_DATA`, `F20` |
+| `8` | `COL_OUT3` | `PC8` | `P31` breakout pad | `DISP_SCS` |
+| `9` | `COL_OUT4` | `PC6` | `P33` breakout pad | `DISP_EXTCOMIN` |
 
 ### Soldering Schematic
 
@@ -196,11 +196,11 @@ pin 2  ------------------------------> P43   / PA5 / ROW_SENSE_1
 pin 3  ------------------------------> P44   / PA6 / ROW_SENSE_2
 pin 4  ------------------------------> P45   / PA7 / ROW_SENSE_3
 
-pin 5  ------------------------------> P24   / PD5 / COL_OUT_0
-pin 6  ------------------------------> P25   / PD4 / COL_OUT_1
-pin 7  ------------------------------> P31   / PC8 / COL_OUT_2
-pin 8  ------------------------------> P33   / PC6 / COL_OUT_3
-pin 9  ------------------------------> EXP10 / PC0 / COL_OUT_4
+pin 5  ------------------------------> EXP10 / PC0 / COL_OUT_0
+pin 6  ------------------------------> P24   / PD5 / COL_OUT_1
+pin 7  ------------------------------> P25   / PD4 / COL_OUT_2
+pin 8  ------------------------------> P31   / PC8 / COL_OUT_3
+pin 9  ------------------------------> P33   / PC6 / COL_OUT_4
 ```
 
 Key group reference for each tail conductor:
@@ -343,7 +343,7 @@ Recommended checks:
 - `Entry Control Configuration Set`
   - verify the node accepts valid values and returns them through `Configuration Get`
 
-Physical key notifications still require the final manual Pin Tool remap, KEYSCAN scan enable, and matrix-position-to-logical-key mapping. The EM2 wake handoff is already integrated in the source.
+Bench jumper testing now confirms the effective accessible column order as `EXP10`, `P24`, `P25`, `P31`, `P33`. The EM2 wake handoff and real `KEYSCAN` matrix-to-logical-key decode path are both integrated in the source; the remaining work is final soldered-keypad testing and Z-Wave notification verification.
 
 ## Project Status Summary
 
@@ -362,7 +362,7 @@ This checklist is intended to show both how the project was created and what wor
 - [x] Remap the final `KEYSCAN` routing in Pin Tool for the mixed harness and regenerate the project.
 - [x] Rebuild, flash, and smoke-test after the final Pin Tool remap.
 - [ ] Solder the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10` and verify continuity on the final assembly.
-- [ ] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
+- [x] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
 - [x] Exercise the existing EM2 wake handoff and verify the expected row-wake behavior.
 - [ ] Run physical keypress testing and verify lifeline notification delivery over Z-Wave.
 - [ ] Add local user feedback for key accepted, cancel, and transmit failure.
