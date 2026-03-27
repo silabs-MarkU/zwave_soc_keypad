@@ -35,6 +35,7 @@
 #define APP_KEYPAD_NOTIFICATION_HEADER_LENGTH      (4U)
 #define APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED     (1U)
 #define APP_KEYPAD_KEYSCAN_SCAN_ENABLED            (1U)
+#define APP_KEYPAD_VERBOSE_LOGGING                 (0U)
 #define APP_KEYPAD_ROW_COUNT                       (4U)
 #define APP_KEYPAD_COLUMN_COUNT                    (5U)
 #define APP_KEYPAD_KEYSCAN_ROUTEEN_MASK            (GPIO_KEYSCAN_ROUTEEN_COLOUT0PEN \
@@ -747,9 +748,7 @@ app_keypad_process_key(app_keypad_key_t key)
 {
   uint8_t ascii = 0U;
 
-  ZPAL_LOG_INFO(ZPAL_LOG_APP,
-                "Decoded keypad key '%s'\n",
-                app_keypad_key_name(key));
+  ZPAL_LOG_INFO(ZPAL_LOG_APP, "Key: '%s'\n", app_keypad_key_name(key));
 
   if (app_keypad_key_to_ascii(key, &ascii)) {
     app_keypad_process_ascii_key(ascii);
@@ -766,9 +765,11 @@ app_keypad_process_key(app_keypad_key_t key)
       break;
 
     default:
+#if APP_KEYPAD_VERBOSE_LOGGING
       ZPAL_LOG_INFO(ZPAL_LOG_APP,
                     "Ignoring reserved keypad key '%s' in phase 1\n",
                     app_keypad_key_name(key));
+#endif
       break;
   }
 }
@@ -925,9 +926,11 @@ app_keypad_process_wake_event(void)
 
   app_keypad_start_wake_guard();
 
+#if APP_KEYPAD_VERBOSE_LOGGING
   ZPAL_LOG_INFO(ZPAL_LOG_APP,
                 "Keypad EM2 wake detected, row mask=0x%02x\n",
                 wake_row_mask);
+#endif
 #endif
 }
 
