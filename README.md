@@ -170,17 +170,17 @@ Harness findings:
 
 This is the cleanest `9`-wire mapping that preserves `VCOM`, `SWD`, `BTN0`, `BTN1`, `LED0`, the MX25 flash helper, and `PC9` board control:
 
-| Keypad Tail Pin | Matrix Role | GPIO | Physical Connection | Shared Board Function |
-| --- | --- | --- | --- | --- |
-| `1` | `ROW_SENSE0` | `PA4` | `P41` breakout pad | `DBG_TDI`, `DEBUG_TRACECLK` |
-| `2` | `ROW_SENSE1` | `PA5` | `P43` breakout pad | `DEBUG_TRACED1` |
-| `3` | `ROW_SENSE2` | `PA6` | `P44` breakout pad | `DEBUG_TRACED2` |
-| `4` | `ROW_SENSE3` | `PA7` | `P45` breakout pad | `DEBUG_TRACED3` |
-| `5` | `COL_OUT0` | `PD5` | `P24` breakout pad | `PTI_SYNC`, `F19` |
-| `6` | `COL_OUT1` | `PD4` | `P25` breakout pad | `PTI_DATA`, `F20` |
-| `7` | `COL_OUT2` | `PC8` | `P31` breakout pad | `DISP_SCS` |
-| `8` | `COL_OUT3` | `PC6` | `P33` breakout pad | `DISP_EXTCOMIN` |
-| `9` | `COL_OUT4` | `PC0` | `EXP10` on the small `EXP` header | `US1_CS` |
+| Keypad Tail Pin | Keys On That Tail Line | Physical Connection |
+| --- | --- | --- |
+| `1` | `F1`, `1`, `4`, `7`, `Left` | `P41` breakout pad |
+| `2` | `F2`, `2`, `5`, `8`, `0` | `P43` breakout pad |
+| `3` | `#`, `3`, `6`, `9`, `Right` | `P44` breakout pad |
+| `4` | `*`, `Up`, `Down`, `Esc`, `Ent` | `P45` breakout pad |
+| `5` | `Left`, `0`, `Right`, `Ent` | `EXP10` on the small `EXP` header |
+| `6` | `7`, `8`, `9`, `Esc` | `P24` breakout pad |
+| `7` | `4`, `5`, `6`, `Down` | `P25` breakout pad |
+| `8` | `1`, `2`, `3`, `Up` | `P31` breakout pad |
+| `9` | `F1`, `F2`, `#`, `*` | `P33` breakout pad |
 
 ### Soldering Schematic
 
@@ -189,33 +189,38 @@ The keypad tail is a linear `1x9` connector. For this README, `pin 1` is the lef
 Use a flying-lead harness from the keypad tail to the `BRD4002A` breakout pads plus one `EXP` pin:
 
 ```text
-Keypad tail                            BRD4002A / EFR32ZG23
------------                            --------------------
-pin 1  ------------------------------> P41   / PA4 / ROW_SENSE_0
-pin 2  ------------------------------> P43   / PA5 / ROW_SENSE_1
-pin 3  ------------------------------> P44   / PA6 / ROW_SENSE_2
-pin 4  ------------------------------> P45   / PA7 / ROW_SENSE_3
+Keypad tail                            BRD4002A breakout / EXP header
+-----------                            ------------------------------
+pin 1  ------------------------------> P41
+pin 2  ------------------------------> P43
+pin 3  ------------------------------> P44
+pin 4  ------------------------------> P45
 
-pin 5  ------------------------------> P24   / PD5 / COL_OUT_0
-pin 6  ------------------------------> P25   / PD4 / COL_OUT_1
-pin 7  ------------------------------> P31   / PC8 / COL_OUT_2
-pin 8  ------------------------------> P33   / PC6 / COL_OUT_3
-pin 9  ------------------------------> EXP10 / PC0 / COL_OUT_4
+pin 5  ------------------------------> EXP10
+pin 6  ------------------------------> P24
+pin 7  ------------------------------> P25
+pin 8  ------------------------------> P31
+pin 9  ------------------------------> P33
 ```
+
+Bench-tested physical column order note:
+
+- For soldering and bench wiring, use the accessible column-pad order `EXP10`, `P24`, `P25`, `P31`, `P33`.
+- The `COL_OUT_x` numbering shown later in the Pin Tool section reflects the generated Simplicity configuration and should not be used to infer the left-to-right keypad-tail solder order.
 
 Key group reference for each tail conductor:
 
-| Tail Pin | Keys On That Line | Final Signal |
+| Tail Pin | Keys On That Line | Final Connection |
 | --- | --- | --- |
-| `1` | `F1`, `1`, `4`, `7`, `Left` | `ROW_SENSE_0` |
-| `2` | `F2`, `2`, `5`, `8`, `0` | `ROW_SENSE_1` |
-| `3` | `#`, `3`, `6`, `9`, `Right` | `ROW_SENSE_2` |
-| `4` | `*`, `Up`, `Down`, `Esc`, `Ent` | `ROW_SENSE_3` |
-| `5` | `Left`, `0`, `Right`, `Ent` | `COL_OUT_0` |
-| `6` | `7`, `8`, `9`, `Esc` | `COL_OUT_1` |
-| `7` | `4`, `5`, `6`, `Down` | `COL_OUT_2` |
-| `8` | `1`, `2`, `3`, `Up` | `COL_OUT_3` |
-| `9` | `F1`, `F2`, `#`, `*` | `COL_OUT_4` |
+| `1` | `F1`, `1`, `4`, `7`, `Left` | `P41` |
+| `2` | `F2`, `2`, `5`, `8`, `0` | `P43` |
+| `3` | `#`, `3`, `6`, `9`, `Right` | `P44` |
+| `4` | `*`, `Up`, `Down`, `Esc`, `Ent` | `P45` |
+| `5` | `Left`, `0`, `Right`, `Ent` | `EXP10` |
+| `6` | `7`, `8`, `9`, `Esc` | `P24` |
+| `7` | `4`, `5`, `6`, `Down` | `P25` |
+| `8` | `1`, `2`, `3`, `Up` | `P31` |
+| `9` | `F1`, `F2`, `#`, `*` | `P33` |
 
 Electrical note:
 
@@ -343,7 +348,7 @@ Recommended checks:
 - `Entry Control Configuration Set`
   - verify the node accepts valid values and returns them through `Configuration Get`
 
-Physical key notifications still require the final manual Pin Tool remap, KEYSCAN scan enable, and matrix-position-to-logical-key mapping. The EM2 wake handoff is already integrated in the source.
+Bench jumper testing then confirms the effective accessible column order as `EXP10`, `P24`, `P25`, `P31`, `P33`, and a full matrix jumper sweep now matches the expected key map. The EM2 wake handoff and real `KEYSCAN` matrix-to-logical-key decode path are both integrated in the source.
 
 ## Project Status Summary
 
@@ -361,8 +366,9 @@ This checklist is intended to show both how the project was created and what wor
 - [x] Confirmed inclusion, exclusion, and initial controller interview behavior during staged bring-up.
 - [x] Remap the final `KEYSCAN` routing in Pin Tool for the mixed harness and regenerate the project.
 - [x] Rebuild, flash, and smoke-test after the final Pin Tool remap.
+- [x] Complete a full bench jumper sweep and verify the expected matrix-to-logical-key mapping.
 - [ ] Solder the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10` and verify continuity on the final assembly.
-- [ ] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
+- [x] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
 - [x] Exercise the existing EM2 wake handoff and verify the expected row-wake behavior.
 - [ ] Run physical keypress testing and verify lifeline notification delivery over Z-Wave.
 - [ ] Add local user feedback for key accepted, cancel, and transmit failure.

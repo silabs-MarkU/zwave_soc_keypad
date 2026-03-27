@@ -34,7 +34,8 @@
 #define APP_KEYPAD_NOTIFICATION_MAX_DATA_LENGTH    (32U)
 #define APP_KEYPAD_NOTIFICATION_HEADER_LENGTH      (4U)
 #define APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED     (1U)
-#define APP_KEYPAD_KEYSCAN_SCAN_ENABLED            (0U)
+#define APP_KEYPAD_KEYSCAN_SCAN_ENABLED            (1U)
+#define APP_KEYPAD_VERBOSE_LOGGING                 (0U)
 #define APP_KEYPAD_ROW_COUNT                       (4U)
 #define APP_KEYPAD_COLUMN_COUNT                    (5U)
 #define APP_KEYPAD_KEYSCAN_ROUTEEN_MASK            (GPIO_KEYSCAN_ROUTEEN_COLOUT0PEN \
@@ -42,6 +43,7 @@
                                                     | GPIO_KEYSCAN_ROUTEEN_COLOUT2PEN \
                                                     | GPIO_KEYSCAN_ROUTEEN_COLOUT3PEN \
                                                     | GPIO_KEYSCAN_ROUTEEN_COLOUT4PEN)
+#define APP_KEYPAD_WAKE_GUARD_TIMEOUT_MS           (1500U)
 
 typedef struct {
   uint32_t magic;
@@ -54,6 +56,7 @@ static StaticQueue_t s_key_queue_struct;
 static uint8_t s_key_queue_storage[APP_KEYPAD_KEY_QUEUE_LENGTH * sizeof(app_keypad_key_t)];
 static QueueHandle_t s_key_queue = NULL;
 static SSwTimer s_keypad_timeout_timer;
+static SSwTimer s_keypad_wake_guard_timer;
 
 static uint8_t s_cached_ascii[APP_KEYPAD_MAX_CACHE_SIZE];
 static uint8_t s_cached_ascii_length = 0;
@@ -65,11 +68,13 @@ static app_keypad_persistent_config_t s_config = {
   .reserved = { 0, 0 }
 };
 static bool s_timer_registered = false;
+static bool s_wake_guard_timer_registered = false;
 static bool s_initialized = false;
 #if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
 static bool s_keyscan_event_subscribed = false;
 static bool s_power_transition_subscribed = false;
 static bool s_em2_wake_mode_active = false;
+static bool s_wake_guard_em1_requirement_active = false;
 static volatile uint8_t s_pending_wake_row_mask = 0U;
 static int32_t s_row_interrupt_numbers[APP_KEYPAD_ROW_COUNT] = {
   SL_GPIO_INTERRUPT_UNAVAILABLE,
@@ -100,6 +105,13 @@ static const char *const s_key_names[] = {
   "down",
   "left",
   "right"
+};
+
+static const app_keypad_key_t s_keyscan_key_map[APP_KEYPAD_ROW_COUNT][APP_KEYPAD_COLUMN_COUNT] = {
+  { APP_KEYPAD_KEY_LEFT,   APP_KEYPAD_KEY_7,      APP_KEYPAD_KEY_4,    APP_KEYPAD_KEY_1,    APP_KEYPAD_KEY_F1 },
+  { APP_KEYPAD_KEY_0,      APP_KEYPAD_KEY_8,      APP_KEYPAD_KEY_5,    APP_KEYPAD_KEY_2,    APP_KEYPAD_KEY_F2 },
+  { APP_KEYPAD_KEY_RIGHT,  APP_KEYPAD_KEY_9,      APP_KEYPAD_KEY_6,    APP_KEYPAD_KEY_3,    APP_KEYPAD_KEY_HASH },
+  { APP_KEYPAD_KEY_ENTER,  APP_KEYPAD_KEY_ESCAPE, APP_KEYPAD_KEY_DOWN, APP_KEYPAD_KEY_UP,   APP_KEYPAD_KEY_STAR }
 };
 
 #if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
@@ -135,7 +147,12 @@ static void app_keypad_enter_em2_wake_mode(void);
 static void app_keypad_leave_em2_wake_mode(void);
 static void app_keypad_disable_keyscan_column_routes(void);
 static void app_keypad_enable_keyscan_column_routes(void);
+static void app_keypad_start_wake_guard(void);
+static void app_keypad_stop_wake_guard(void);
+static void app_keypad_wake_guard_timer_callback(SSwTimer *pTimer);
 static void app_keypad_row_wake_isr(uint8_t interrupt_number, void *context);
+static bool app_keypad_try_decode_matrix_key(const uint8_t *p_keyscan_matrix,
+                                             app_keypad_key_t *p_key);
 static void app_keypad_keyscan_event_callback(uint8_t *p_keyscan_matrix,
                                               sl_keyscan_driver_status_t status);
 static const sl_power_manager_em_transition_event_info_t s_power_transition_event_info = {
@@ -349,10 +366,113 @@ app_keypad_row_wake_isr(__attribute__((unused)) uint8_t interrupt_number,
 }
 
 static void
-app_keypad_keyscan_event_callback(__attribute__((unused)) uint8_t *p_keyscan_matrix,
-                                  __attribute__((unused)) sl_keyscan_driver_status_t status)
+app_keypad_keyscan_event_callback(uint8_t *p_keyscan_matrix,
+                                  sl_keyscan_driver_status_t status)
 {
-  // The driver is wired in for bring-up, but matrix-to-key translation is added later.
+  app_keypad_key_t key;
+
+  if (NULL == p_keyscan_matrix) {
+    return;
+  }
+
+#if SL_KEYSCAN_DRIVER_SINGLEPRESS
+  if (SL_KEYSCAN_STATUS_KEYPRESS_VALID != status) {
+    return;
+  }
+#else
+  if (SL_KEYSCAN_STATUS_KEYPRESS_RELEASED != status) {
+    return;
+  }
+#endif
+
+  if (!app_keypad_try_decode_matrix_key(p_keyscan_matrix, &key)) {
+    return;
+  }
+
+  if (!app_keypad_enqueue_key_from_isr(key)) {
+    ZPAL_LOG_ERROR(ZPAL_LOG_APP,
+                   "Failed to enqueue decoded KEYSCAN key '%s'\n",
+                   app_keypad_key_name(key));
+  }
+}
+#endif
+
+#if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
+static bool
+app_keypad_try_decode_matrix_key(const uint8_t *p_keyscan_matrix,
+                                 app_keypad_key_t *p_key)
+{
+  uint8_t active_column = APP_KEYPAD_COLUMN_COUNT;
+  uint8_t active_row = 0U;
+  const uint8_t row_mask_limit = (uint8_t)((1U << APP_KEYPAD_ROW_COUNT) - 1U);
+
+  if ((NULL == p_keyscan_matrix) || (NULL == p_key)) {
+    return false;
+  }
+
+  for (uint8_t column = 0U; column < APP_KEYPAD_COLUMN_COUNT; column++) {
+    uint8_t row_mask = (uint8_t)(p_keyscan_matrix[column] & row_mask_limit);
+
+    if (0U == row_mask) {
+      continue;
+    }
+
+    if ((row_mask & (uint8_t)(row_mask - 1U)) != 0U) {
+      return false;
+    }
+
+    if (active_column < APP_KEYPAD_COLUMN_COUNT) {
+      return false;
+    }
+
+    active_column = column;
+    active_row = 0U;
+    while ((row_mask & 0x01U) == 0U) {
+      row_mask >>= 1;
+      active_row++;
+    }
+  }
+
+  if ((active_column >= APP_KEYPAD_COLUMN_COUNT) || (active_row >= APP_KEYPAD_ROW_COUNT)) {
+    return false;
+  }
+
+  *p_key = s_keyscan_key_map[active_row][active_column];
+  return true;
+}
+
+static void
+app_keypad_start_wake_guard(void)
+{
+  if (!s_wake_guard_em1_requirement_active) {
+    sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
+    s_wake_guard_em1_requirement_active = true;
+  }
+
+  (void)TimerStop(&s_keypad_wake_guard_timer);
+  if (ESWTIMER_STATUS_FAILED == TimerStart(&s_keypad_wake_guard_timer,
+                                           APP_KEYPAD_WAKE_GUARD_TIMEOUT_MS)) {
+    ZPAL_LOG_ERROR(ZPAL_LOG_APP,
+                   "Failed to start keypad wake guard timer\n");
+    app_keypad_stop_wake_guard();
+  }
+}
+
+static void
+app_keypad_stop_wake_guard(void)
+{
+  (void)TimerStop(&s_keypad_wake_guard_timer);
+
+  if (s_wake_guard_em1_requirement_active) {
+    sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
+    s_wake_guard_em1_requirement_active = false;
+  }
+}
+
+static void
+app_keypad_wake_guard_timer_callback(__attribute__((unused)) SSwTimer *pTimer)
+{
+  app_keypad_stop_wake_guard();
 }
 #endif
 
@@ -628,6 +748,8 @@ app_keypad_process_key(app_keypad_key_t key)
 {
   uint8_t ascii = 0U;
 
+  ZPAL_LOG_INFO(ZPAL_LOG_APP, "Key: '%s'\n", app_keypad_key_name(key));
+
   if (app_keypad_key_to_ascii(key, &ascii)) {
     app_keypad_process_ascii_key(ascii);
     return;
@@ -643,9 +765,11 @@ app_keypad_process_key(app_keypad_key_t key)
       break;
 
     default:
+#if APP_KEYPAD_VERBOSE_LOGGING
       ZPAL_LOG_INFO(ZPAL_LOG_APP,
                     "Ignoring reserved keypad key '%s' in phase 1\n",
                     app_keypad_key_name(key));
+#endif
       break;
   }
 }
@@ -692,6 +816,13 @@ app_keypad_init(void)
                                             false,
                                             app_keypad_timeout_timer_callback);
       assert(s_timer_registered);
+    }
+
+    if (!s_wake_guard_timer_registered) {
+      s_wake_guard_timer_registered = AppTimerRegister(&s_keypad_wake_guard_timer,
+                                                       false,
+                                                       app_keypad_wake_guard_timer_callback);
+      assert(s_wake_guard_timer_registered);
     }
 
     s_initialized = true;
@@ -793,9 +924,13 @@ app_keypad_process_wake_event(void)
     return;
   }
 
+  app_keypad_start_wake_guard();
+
+#if APP_KEYPAD_VERBOSE_LOGGING
   ZPAL_LOG_INFO(ZPAL_LOG_APP,
                 "Keypad EM2 wake detected, row mask=0x%02x\n",
                 wake_row_mask);
+#endif
 #endif
 }
 
