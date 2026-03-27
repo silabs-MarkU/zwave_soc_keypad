@@ -343,7 +343,7 @@ Recommended checks:
 - `Entry Control Configuration Set`
   - verify the node accepts valid values and returns them through `Configuration Get`
 
-Bench jumper testing now confirms the effective accessible column order as `EXP10`, `P24`, `P25`, `P31`, `P33`. The EM2 wake handoff and real `KEYSCAN` matrix-to-logical-key decode path are both integrated in the source; the remaining work is final soldered-keypad testing and Z-Wave notification verification.
+Bench jumper testing then confirms the effective accessible column order as `EXP10`, `P24`, `P25`, `P31`, `P33`, and a full matrix jumper sweep now matches the expected key map. The EM2 wake handoff and real `KEYSCAN` matrix-to-logical-key decode path are both integrated in the source.
 
 ## Project Status Summary
 
@@ -361,6 +361,7 @@ This checklist is intended to show both how the project was created and what wor
 - [x] Confirmed inclusion, exclusion, and initial controller interview behavior during staged bring-up.
 - [x] Remap the final `KEYSCAN` routing in Pin Tool for the mixed harness and regenerate the project.
 - [x] Rebuild, flash, and smoke-test after the final Pin Tool remap.
+- [x] Complete a full bench jumper sweep and verify the expected matrix-to-logical-key mapping.
 - [ ] Solder the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10` and verify continuity on the final assembly.
 - [x] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
 - [x] Exercise the existing EM2 wake handoff and verify the expected row-wake behavior.
