@@ -42,6 +42,7 @@
                                                     | GPIO_KEYSCAN_ROUTEEN_COLOUT2PEN \
                                                     | GPIO_KEYSCAN_ROUTEEN_COLOUT3PEN \
                                                     | GPIO_KEYSCAN_ROUTEEN_COLOUT4PEN)
+#define APP_KEYPAD_WAKE_GUARD_TIMEOUT_MS           (1500U)
 
 typedef struct {
   uint32_t magic;
@@ -54,6 +55,7 @@ static StaticQueue_t s_key_queue_struct;
 static uint8_t s_key_queue_storage[APP_KEYPAD_KEY_QUEUE_LENGTH * sizeof(app_keypad_key_t)];
 static QueueHandle_t s_key_queue = NULL;
 static SSwTimer s_keypad_timeout_timer;
+static SSwTimer s_keypad_wake_guard_timer;
 
 static uint8_t s_cached_ascii[APP_KEYPAD_MAX_CACHE_SIZE];
 static uint8_t s_cached_ascii_length = 0;
@@ -65,11 +67,13 @@ static app_keypad_persistent_config_t s_config = {
   .reserved = { 0, 0 }
 };
 static bool s_timer_registered = false;
+static bool s_wake_guard_timer_registered = false;
 static bool s_initialized = false;
 #if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
 static bool s_keyscan_event_subscribed = false;
 static bool s_power_transition_subscribed = false;
 static bool s_em2_wake_mode_active = false;
+static bool s_wake_guard_em1_requirement_active = false;
 static volatile uint8_t s_pending_wake_row_mask = 0U;
 static int32_t s_row_interrupt_numbers[APP_KEYPAD_ROW_COUNT] = {
   SL_GPIO_INTERRUPT_UNAVAILABLE,
@@ -142,6 +146,9 @@ static void app_keypad_enter_em2_wake_mode(void);
 static void app_keypad_leave_em2_wake_mode(void);
 static void app_keypad_disable_keyscan_column_routes(void);
 static void app_keypad_enable_keyscan_column_routes(void);
+static void app_keypad_start_wake_guard(void);
+static void app_keypad_stop_wake_guard(void);
+static void app_keypad_wake_guard_timer_callback(SSwTimer *pTimer);
 static void app_keypad_row_wake_isr(uint8_t interrupt_number, void *context);
 static bool app_keypad_try_decode_matrix_key(const uint8_t *p_keyscan_matrix,
                                              app_keypad_key_t *p_key);
@@ -431,6 +438,40 @@ app_keypad_try_decode_matrix_key(const uint8_t *p_keyscan_matrix,
 
   *p_key = s_keyscan_key_map[active_row][active_column];
   return true;
+}
+
+static void
+app_keypad_start_wake_guard(void)
+{
+  if (!s_wake_guard_em1_requirement_active) {
+    sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
+    s_wake_guard_em1_requirement_active = true;
+  }
+
+  (void)TimerStop(&s_keypad_wake_guard_timer);
+  if (ESWTIMER_STATUS_FAILED == TimerStart(&s_keypad_wake_guard_timer,
+                                           APP_KEYPAD_WAKE_GUARD_TIMEOUT_MS)) {
+    ZPAL_LOG_ERROR(ZPAL_LOG_APP,
+                   "Failed to start keypad wake guard timer\n");
+    app_keypad_stop_wake_guard();
+  }
+}
+
+static void
+app_keypad_stop_wake_guard(void)
+{
+  (void)TimerStop(&s_keypad_wake_guard_timer);
+
+  if (s_wake_guard_em1_requirement_active) {
+    sl_power_manager_remove_em_requirement(SL_POWER_MANAGER_EM1);
+    s_wake_guard_em1_requirement_active = false;
+  }
+}
+
+static void
+app_keypad_wake_guard_timer_callback(__attribute__((unused)) SSwTimer *pTimer)
+{
+  app_keypad_stop_wake_guard();
 }
 #endif
 
@@ -776,6 +817,13 @@ app_keypad_init(void)
       assert(s_timer_registered);
     }
 
+    if (!s_wake_guard_timer_registered) {
+      s_wake_guard_timer_registered = AppTimerRegister(&s_keypad_wake_guard_timer,
+                                                       false,
+                                                       app_keypad_wake_guard_timer_callback);
+      assert(s_wake_guard_timer_registered);
+    }
+
     s_initialized = true;
   }
 
@@ -874,6 +922,8 @@ app_keypad_process_wake_event(void)
   if (0U == wake_row_mask) {
     return;
   }
+
+  app_keypad_start_wake_guard();
 
   ZPAL_LOG_INFO(ZPAL_LOG_APP,
                 "Keypad EM2 wake detected, row mask=0x%02x\n",
