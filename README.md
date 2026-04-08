@@ -2,7 +2,7 @@
 
 Who: Mark Umina<br>
 When: Friday, March 20, 2026<br>
-What: Simplicity SDK Suite v2025.12.1, Z-Wave SDK 8.0.0.0<br>
+What: Simplicity SDK Suite v2025.12.1, Z-Wave SDK 8.0.0<br>
 Why: Create a FLiRS keypad proof of concept from DoorLockKeypad application
 
 This repository captures the conversion of the Silicon Labs `ZWave_SoC_DoorLockKeypad_Solution` sample into a Z-Wave keypad proof of concept built around `COMMAND_CLASS_ENTRY_CONTROL`.
