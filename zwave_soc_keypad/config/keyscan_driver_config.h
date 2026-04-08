@@ -107,7 +107,7 @@
 // <q SL_KEYSCAN_DRIVER_SINGLEPRESS> keyscan single-press functionality
 // <i> Enable or disable single-press functionality.
 // <i> Default: 0
-#define SL_KEYSCAN_DRIVER_SINGLEPRESS  0
+#define SL_KEYSCAN_DRIVER_SINGLEPRESS  1
 
 // <<< end of configuration section >>>
 

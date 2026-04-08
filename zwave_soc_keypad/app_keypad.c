@@ -147,7 +147,7 @@ static void app_keypad_enter_em2_wake_mode(void);
 static void app_keypad_leave_em2_wake_mode(void);
 static void app_keypad_disable_keyscan_column_routes(void);
 static void app_keypad_enable_keyscan_column_routes(void);
-static void app_keypad_start_wake_guard(void);
+static void app_keypad_start_wake_guard(uint32_t timeout_ms);
 static void app_keypad_stop_wake_guard(void);
 static void app_keypad_wake_guard_timer_callback(SSwTimer *pTimer);
 static void app_keypad_row_wake_isr(uint8_t interrupt_number, void *context);
@@ -437,12 +437,18 @@ app_keypad_try_decode_matrix_key(const uint8_t *p_keyscan_matrix,
     return false;
   }
 
+#if SL_KEYSCAN_DRIVER_SINGLEPRESS
+  // Bench testing shows the immediate KEYPRESS_VALID path reports the active
+  // scan column one slot early, so advance it before logical key lookup.
+  active_column = (uint8_t)((active_column + 1U) % APP_KEYPAD_COLUMN_COUNT);
+#endif
+
   *p_key = s_keyscan_key_map[active_row][active_column];
   return true;
 }
 
 static void
-app_keypad_start_wake_guard(void)
+app_keypad_start_wake_guard(uint32_t timeout_ms)
 {
   if (!s_wake_guard_em1_requirement_active) {
     sl_power_manager_add_em_requirement(SL_POWER_MANAGER_EM1);
@@ -451,7 +457,7 @@ app_keypad_start_wake_guard(void)
 
   (void)TimerStop(&s_keypad_wake_guard_timer);
   if (ESWTIMER_STATUS_FAILED == TimerStart(&s_keypad_wake_guard_timer,
-                                           APP_KEYPAD_WAKE_GUARD_TIMEOUT_MS)) {
+                                           timeout_ms)) {
     ZPAL_LOG_ERROR(ZPAL_LOG_APP,
                    "Failed to start keypad wake guard timer\n");
     app_keypad_stop_wake_guard();
@@ -726,6 +732,10 @@ app_keypad_process_ascii_key(uint8_t ascii)
   }
 
   app_keypad_restart_timeout_timer();
+
+#if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
+  app_keypad_start_wake_guard((uint32_t)s_config.key_cache_timeout_seconds * 1000UL);
+#endif
 }
 
 static void
@@ -747,6 +757,10 @@ static void
 app_keypad_process_key(app_keypad_key_t key)
 {
   uint8_t ascii = 0U;
+
+#if APP_KEYPAD_KEYSCAN_DRIVER_INIT_ENABLED
+  app_keypad_start_wake_guard(APP_KEYPAD_WAKE_GUARD_TIMEOUT_MS);
+#endif
 
   ZPAL_LOG_INFO(ZPAL_LOG_APP, "Key: '%s'\n", app_keypad_key_name(key));
 
@@ -924,7 +938,7 @@ app_keypad_process_wake_event(void)
     return;
   }
 
-  app_keypad_start_wake_guard();
+  app_keypad_start_wake_guard(APP_KEYPAD_WAKE_GUARD_TIMEOUT_MS);
 
 #if APP_KEYPAD_VERBOSE_LOGGING
   ZPAL_LOG_INFO(ZPAL_LOG_APP,
