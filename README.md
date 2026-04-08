@@ -2,7 +2,7 @@
 
 Who: Mark Umina<br>
 When: Friday, March 20, 2026<br>
-What: Simplicity SDK Suite v2025.12.1, Z-Wave SDK 8.0.0.0<br>
+What: Simplicity SDK Suite v2025.12.1, Z-Wave SDK 8.0.0<br>
 Why: Create a FLiRS keypad proof of concept from DoorLockKeypad application
 
 This repository captures the conversion of the Silicon Labs `ZWave_SoC_DoorLockKeypad_Solution` sample into a Z-Wave keypad proof of concept built around `COMMAND_CLASS_ENTRY_CONTROL`.
@@ -18,9 +18,10 @@ Current implementation:
 - Node type changed to Entry Control / Secure Keypad
 - Entry Control command handling was written from the Alliance specification
 - keypad input is cached locally and reported through Entry Control notifications
+- controller-relevant keypad notifications request Supervision for verified delivery
 - Keypad configuration is stored in NVM
 - CLI simulation is available for pre-hardware validation
-- KEYSCAN support and the EM2 wake handoff are integrated for staged hardware bring-up
+- KEYSCAN support and the EM2 wake handoff are integrated for hardware testing
 - The direct WSTK pushbuttons are kept for service actions; no separate pushbutton board is used on the EXP header
 
 ## Device Model
@@ -100,7 +101,7 @@ Current WSTK button behavior:
 | `BTN1` | Short press | Toggle Z-Wave learn mode |
 | `BTN1` | Very long press | Factory reset |
 
-`BTN0` short and long press are currently unused in this keypad project. The WSTK buttons remain useful for inclusion, exclusion, reset, and bench bring-up while the external keypad provides the actual Entry Control input path.
+`BTN0` short and long press are currently unused in this keypad project. The WSTK buttons remain useful for inclusion, exclusion, reset, and testing while the external keypad provides the actual Entry Control input path.
 
 ## Entry Control Behavior
 
@@ -139,6 +140,12 @@ Phase-1 supported Entry Control events:
 - `ENTER`
 - `CANCEL`
 
+### Notification Transport / Supervision
+
+- `CACHED_KEYS`, `ENTER`, and `CANCEL` request Supervision on outbound Entry Control notifications.
+- `CACHING` remains unsupervised because it is transient and may repeat during active entry.
+- The keypad treats `TRANSMIT_COMPLETE_VERIFIED` as a successful verified send and logs returned Supervision report status when available.
+
 Bitmask note for `Entry Control Key Supported Report`:
 
 - bit `35` = `#`
@@ -151,24 +158,18 @@ A `4x5` keypad requires `9` signals total. For this keypad tail, the `4`-line si
 
 - KEYSCAN rows: `4`
 - KEYSCAN columns: `5`
-- For this keypad tail, pins `1-4` should be assigned to `ROW_SENSE`
-- For this keypad tail, pins `5-9` should be assigned to `COL_OUT`
+- For this keypad tail, pins `1-4` are assigned to `ROW_SENSE`
+- For this keypad tail, pins `5-9` are assigned to `COL_OUT`
 
-The final harness recommendation is mixed:
+The harness uses the large `BRD4002A` breakout headers for the `4` row signals and `4` of the `5` column signals, plus `EXP10` for the remaining column signal.
 
-- use the large solderable `BRD4002A` breakout headers for the `4` row signals and `4` of the `5` column signals
-- use one pin on the small `EXP` header for the last column signal
-
-Harness findings:
+Board constraints:
 
 - The `BRD4210A` radio board breaks out all `EFR32ZG23` GPIO except `PD0` and `PD1`.
 - The keypad tail is a straight `1x9` connector, but there is no single straight `1x9` row of usable, non-conflicting GPIO on the breakout headers.
-- The current `KEYSCAN` source already follows the generated GPIO macros, so the final wiring choice is mainly a Pin Tool and harness problem.
-- A mixed harness avoids conflicts with `VCOM`, `SWD`, the WSTK buttons, the MX25 flash helper, and `PC9` board-control display ownership.
+- This pinout avoids conflicts with `VCOM`, `SWD`, the WSTK buttons, the MX25 flash helper, and `PC9` board-control display ownership.
 
-### Recommended Mixed Harness
-
-This is the cleanest `9`-wire mapping that preserves `VCOM`, `SWD`, `BTN0`, `BTN1`, `LED0`, the MX25 flash helper, and `PC9` board control:
+### Harness Wiring
 
 | Keypad Tail Pin | Keys On That Tail Line | Physical Connection |
 | --- | --- | --- |
@@ -182,49 +183,16 @@ This is the cleanest `9`-wire mapping that preserves `VCOM`, `SWD`, `BTN0`, `BTN
 | `8` | `1`, `2`, `3`, `Up` | `P31` breakout pad |
 | `9` | `F1`, `F2`, `#`, `*` | `P33` breakout pad |
 
-### Soldering Schematic
-
 The keypad tail is a linear `1x9` connector. For this README, `pin 1` is the leftmost tail conductor when viewing the keypad from the front, with the tail exiting from the upper-left side of the keypad.
 
-Use a flying-lead harness from the keypad tail to the `BRD4002A` breakout pads plus one `EXP` pin:
+Physical column order note:
 
-```text
-Keypad tail                            BRD4002A breakout / EXP header
------------                            ------------------------------
-pin 1  ------------------------------> P41
-pin 2  ------------------------------> P43
-pin 3  ------------------------------> P44
-pin 4  ------------------------------> P45
-
-pin 5  ------------------------------> EXP10
-pin 6  ------------------------------> P24
-pin 7  ------------------------------> P25
-pin 8  ------------------------------> P31
-pin 9  ------------------------------> P33
-```
-
-Bench-tested physical column order note:
-
-- For soldering and bench wiring, use the accessible column-pad order `EXP10`, `P24`, `P25`, `P31`, `P33`.
+- Use the accessible column-pad order `EXP10`, `P24`, `P25`, `P31`, `P33`.
 - The `COL_OUT_x` numbering shown later in the Pin Tool section reflects the generated Simplicity configuration and should not be used to infer the left-to-right keypad-tail solder order.
-
-Key group reference for each tail conductor:
-
-| Tail Pin | Keys On That Line | Final Connection |
-| --- | --- | --- |
-| `1` | `F1`, `1`, `4`, `7`, `Left` | `P41` |
-| `2` | `F2`, `2`, `5`, `8`, `0` | `P43` |
-| `3` | `#`, `3`, `6`, `9`, `Right` | `P44` |
-| `4` | `*`, `Up`, `Down`, `Esc`, `Ent` | `P45` |
-| `5` | `Left`, `0`, `Right`, `Ent` | `EXP10` |
-| `6` | `7`, `8`, `9`, `Esc` | `P24` |
-| `7` | `4`, `5`, `6`, `Down` | `P25` |
-| `8` | `1`, `2`, `3`, `Up` | `P31` |
-| `9` | `F1`, `F2`, `#`, `*` | `P33` |
 
 Electrical note:
 
-- The pressed key contact resistance measured on the keypad is low enough for the planned `KEYSCAN` wiring and does not change the recommended pin assignment.
+- The pressed key contact resistance measured on the keypad is low enough for reliable operation with this `KEYSCAN` wiring.
 
 This harness preserves:
 
@@ -266,7 +234,7 @@ With `VCOM`, `SWD`, and the WSTK buttons preserved, there are only `6` free `A/B
 
 That is not enough to place all `9` keypad lines on `A/B` pins. Because of that, there is no free, non-conflicting `9`-wire harness that keeps every keypad signal on EM2-capable pads while also preserving `VCOM`, `SWD`, and the WSTK buttons.
 
-The recommended low-energy approach is:
+The low-energy approach is:
 
 1. Use the `A`-port row pins (`PA4` through `PA7`) as the wake-detect lines.
 2. Before entering EM2, temporarily drive the column pins (`PD5`, `PD4`, `PC8`, `PC6`, `PC0`) low as normal GPIO outputs.
@@ -292,7 +260,7 @@ This keeps exact key detection available after wake while preserving the kit fun
 
 ### Manual Pin Tool Checklist
 
-Make this routing change in Simplicity Studio by hand. Do not hand-edit the `.pintool` file.
+Set this routing in Simplicity Studio. Do not hand-edit the `.pintool` file.
 
 Keep these assignments as they are:
 
@@ -331,8 +299,6 @@ Active KEYSCAN interrupts already used by the driver:
 
 The additional falling-edge GPIO interrupts on `PA4` through `PA7` are part of the EM2 sleep / wake handoff that is already in the source, not part of the normal KEYSCAN pin-tool routing.
 
-Pin routing should be done in the Simplicity Configurator / pin tool, not by hand-editing the `.pintool` file. During bring-up, it is valid to keep KEYSCAN inactive until build, flash, and debug behavior are confirmed.
-
 ## Validation
 
 The most useful pre-hardware validation is controller `GET` and `REPORT` traffic.
@@ -347,12 +313,16 @@ Recommended checks:
   - expect the configured cache size and timeout
 - `Entry Control Configuration Set`
   - verify the node accepts valid values and returns them through `Configuration Get`
+- supervised outbound notifications
+  - expect `CACHED_KEYS`, `ENTER`, and `CANCEL` to request Supervision
+  - expect `CACHING` to remain unsupervised
+  - expect verified sends to surface as `TRANSMIT_COMPLETE_VERIFIED` and Supervision report logs when the controller returns them
 
-Bench jumper testing then confirms the effective accessible column order as `EXP10`, `P24`, `P25`, `P31`, `P33`, and a full matrix jumper sweep now matches the expected key map. The EM2 wake handoff and real `KEYSCAN` matrix-to-logical-key decode path are both integrated in the source.
+The accessible column order is `EXP10`, `P24`, `P25`, `P31`, `P33`. The EM2 wake handoff and real `KEYSCAN` matrix-to-logical-key decode path are integrated in the source.
 
 ## Project Status Summary
 
-This checklist is intended to show both how the project was created and what work remains from the current repo state.
+This checklist summarizes the implemented work and completed validation.
 
 - [x] Created this keypad PoC from the current Silicon Labs `ZWave_SoC_DoorLockKeypad_Solution` sample, keeping the FLiRS framework, build flow, and WSTK service-button behavior as the project foundation.
 - [x] Wrote the Entry Control implementation from the Z-Wave Alliance Application Specification PDF `zwave specifications_3828_1.pdf`.
@@ -360,16 +330,17 @@ This checklist is intended to show both how the project was created and what wor
 - [x] Removed `Door Lock CC`, `User Code CC`, `User Credential CC`, and `Basic CC`.
 - [x] Kept the direct WSTK buttons for service actions such as learn mode, battery report, and factory reset.
 - [x] Added keypad caching, Entry Control notifications, and NVM-backed Entry Control configuration handling.
+- [x] Enabled selective Supervision for controller-relevant Entry Control notifications.
 - [x] Added CLI-based keypad simulation for pre-hardware validation.
-- [x] Integrated staged `KEYSCAN` support and the EM2 wake handoff into the project.
-- [x] Measured the actual `1x9` keypad tail pinout and selected the final mixed harness mapping.
-- [x] Confirmed inclusion, exclusion, and initial controller interview behavior during staged bring-up.
-- [x] Remap the final `KEYSCAN` routing in Pin Tool for the mixed harness and regenerate the project.
-- [x] Rebuild, flash, and smoke-test after the final Pin Tool remap.
-- [x] Complete a full bench jumper sweep and verify the expected matrix-to-logical-key mapping.
-- [ ] Solder the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10` and verify continuity on the final assembly.
-- [x] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
-- [x] Exercise the existing EM2 wake handoff and verify the expected row-wake behavior.
-- [ ] Run physical keypress testing and verify lifeline notification delivery over Z-Wave.
-- [ ] Add local user feedback for key accepted, cancel, and transmit failure.
-- [ ] Re-run inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
+- [x] Integrated `KEYSCAN` support and the EM2 wake handoff into the project.
+- [x] Measured the actual `1x9` keypad tail pinout and documented the keypad harness mapping.
+- [x] Confirmed inclusion, exclusion, and initial controller interview behavior.
+- [x] Set the `KEYSCAN` routing in Pin Tool and regenerated the project.
+- [x] Rebuilt, flashed, and smoke-tested after the Pin Tool routing change.
+- [x] Verified the expected matrix-to-logical-key mapping.
+- [x] Soldered the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10`, and verified continuity on the final assembly.
+- [x] Added the real `KEYSCAN` callback path and matrix-to-logical-key translation.
+- [x] Exercised the existing EM2 wake handoff and verified the expected row-wake behavior.
+- [x] Ran physical keypress testing and verified lifeline notification delivery over Z-Wave.
+- [x] Added local user feedback for key accepted, cancel, and transmit failure.
+- [x] Re-ran inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
