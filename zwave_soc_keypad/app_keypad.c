@@ -437,6 +437,12 @@ app_keypad_try_decode_matrix_key(const uint8_t *p_keyscan_matrix,
     return false;
   }
 
+#if SL_KEYSCAN_DRIVER_SINGLEPRESS
+  // Bench testing shows the immediate KEYPRESS_VALID path reports the active
+  // scan column one slot early, so advance it before logical key lookup.
+  active_column = (uint8_t)((active_column + 1U) % APP_KEYPAD_COLUMN_COUNT);
+#endif
+
   *p_key = s_keyscan_key_map[active_row][active_column];
   return true;
 }
