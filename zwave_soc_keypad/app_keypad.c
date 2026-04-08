@@ -7,6 +7,7 @@
 
 #include "AppTimer.h"
 #include "CC_Common.h"
+#include "cc_supervision_handlers.h"
 #include "FreeRTOS.h"
 #include "keyscan_driver.h"
 #include "keyscan_driver_config.h"
@@ -165,6 +166,7 @@ static JOB_STATUS app_keypad_send_notification(uint8_t event_type,
                                                const uint8_t *event_data,
                                                uint8_t event_data_length,
                                                bool use_ascii_encoding);
+static bool app_keypad_should_use_supervision(uint8_t event_type);
 static void app_keypad_notification_callback(TRANSMISSION_RESULT *pTransmissionResult);
 static uint8_t app_keypad_lifeline_reporting(ccc_pair_t *p_ccc_pair);
 static received_frame_status_t app_keypad_command_class_handler(cc_handler_input_t *input,
@@ -647,6 +649,20 @@ app_keypad_notification_callback(TRANSMISSION_RESULT *pTransmissionResult)
   }
 }
 
+static bool
+app_keypad_should_use_supervision(uint8_t event_type)
+{
+  switch (event_type) {
+    case ENTRY_CONTROL_NOTIFICATION_CACHED_KEYS:
+    case ENTRY_CONTROL_NOTIFICATION_ENTER:
+    case ENTRY_CONTROL_NOTIFICATION_CANCEL:
+      return true;
+
+    default:
+      return false;
+  }
+}
+
 static JOB_STATUS
 app_keypad_send_notification(uint8_t event_type,
                              const uint8_t *event_data,
@@ -655,6 +671,7 @@ app_keypad_send_notification(uint8_t event_type,
 {
   uint8_t payload[APP_KEYPAD_NOTIFICATION_HEADER_LENGTH + APP_KEYPAD_NOTIFICATION_MAX_DATA_LENGTH] = { 0U };
   uint8_t payload_length = APP_KEYPAD_NOTIFICATION_HEADER_LENGTH;
+  bool use_supervision = app_keypad_should_use_supervision(event_type);
   CMD_CLASS_GRP command = {
     .cmdClass = COMMAND_CLASS_ENTRY_CONTROL,
     .cmd = ENTRY_CONTROL_NOTIFICATION
@@ -677,17 +694,27 @@ app_keypad_send_notification(uint8_t event_type,
   }
 
   ZPAL_LOG_DEBUG(ZPAL_LOG_APP,
-                 "Entry Control notify event=0x%02x data_len=%u\n",
+                 "Entry Control notify event=0x%02x data_len=%u supervision=%u\n",
                  event_type,
-                 payload[3]);
+                 payload[3],
+                 use_supervision ? 1U : 0U);
 
   return cc_engine_multicast_request(NULL,
                                      ENDPOINT_ROOT,
                                      &command,
                                      payload,
                                      payload_length,
-                                     false,
+                                     use_supervision,
                                      app_keypad_notification_callback);
+}
+
+void
+cc_supervision_report_recived_handler(cc_supervision_status_t status, uint8_t duration)
+{
+  ZPAL_LOG_INFO(ZPAL_LOG_APP,
+                "Keypad supervision report status=%u duration=%u\n",
+                status,
+                duration);
 }
 
 static void
