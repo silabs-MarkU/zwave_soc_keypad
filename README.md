@@ -158,8 +158,8 @@ A `4x5` keypad requires `9` signals total. For this keypad tail, the `4`-line si
 
 - KEYSCAN rows: `4`
 - KEYSCAN columns: `5`
-- For this keypad tail, pins `1-4` should be assigned to `ROW_SENSE`
-- For this keypad tail, pins `5-9` should be assigned to `COL_OUT`
+- For this keypad tail, pins `1-4` are assigned to `ROW_SENSE`
+- For this keypad tail, pins `5-9` are assigned to `COL_OUT`
 
 The harness uses the large `BRD4002A` breakout headers for the `4` row signals and `4` of the `5` column signals, plus `EXP10` for the remaining column signal.
 
@@ -167,7 +167,6 @@ Board constraints:
 
 - The `BRD4210A` radio board breaks out all `EFR32ZG23` GPIO except `PD0` and `PD1`.
 - The keypad tail is a straight `1x9` connector, but there is no single straight `1x9` row of usable, non-conflicting GPIO on the breakout headers.
-- The current `KEYSCAN` source already follows the generated GPIO macros, so the remaining work is wiring and Pin Tool routing.
 - This pinout avoids conflicts with `VCOM`, `SWD`, the WSTK buttons, the MX25 flash helper, and `PC9` board-control display ownership.
 
 ### Harness Wiring
@@ -193,7 +192,7 @@ Physical column order note:
 
 Electrical note:
 
-- The pressed key contact resistance measured on the keypad is low enough for the planned `KEYSCAN` wiring and does not change the selected pin assignment.
+- The pressed key contact resistance measured on the keypad is low enough for reliable operation with this `KEYSCAN` wiring.
 
 This harness preserves:
 
@@ -323,7 +322,7 @@ The accessible column order is `EXP10`, `P24`, `P25`, `P31`, `P33`. The EM2 wake
 
 ## Project Status Summary
 
-This checklist shows the implemented work and the remaining validation tasks.
+This checklist summarizes the implemented work and completed validation.
 
 - [x] Created this keypad PoC from the current Silicon Labs `ZWave_SoC_DoorLockKeypad_Solution` sample, keeping the FLiRS framework, build flow, and WSTK service-button behavior as the project foundation.
 - [x] Wrote the Entry Control implementation from the Z-Wave Alliance Application Specification PDF `zwave specifications_3828_1.pdf`.
@@ -338,10 +337,10 @@ This checklist shows the implemented work and the remaining validation tasks.
 - [x] Confirmed inclusion, exclusion, and initial controller interview behavior.
 - [x] Set the `KEYSCAN` routing in Pin Tool and regenerated the project.
 - [x] Rebuilt, flashed, and smoke-tested after the Pin Tool routing change.
-- [x] Verify the expected matrix-to-logical-key mapping.
-- [x] Solder the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10` and verify continuity on the final assembly.
-- [x] Add the real `KEYSCAN` callback path and matrix-to-logical-key translation.
-- [x] Exercise the existing EM2 wake handoff and verify the expected row-wake behavior.
-- [x] Run physical keypress testing and verify lifeline notification delivery over Z-Wave.
-- [x] Add local user feedback for key accepted, cancel, and transmit failure.
-- [x] Re-run inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
+- [x] Verified the expected matrix-to-logical-key mapping.
+- [x] Soldered the keypad harness to `P41`, `P43`, `P44`, `P45`, `P24`, `P25`, `P31`, `P33`, and `EXP10`, and verified continuity on the final assembly.
+- [x] Added the real `KEYSCAN` callback path and matrix-to-logical-key translation.
+- [x] Exercised the existing EM2 wake handoff and verified the expected row-wake behavior.
+- [x] Ran physical keypress testing and verified lifeline notification delivery over Z-Wave.
+- [x] Added local user feedback for key accepted, cancel, and transmit failure.
+- [x] Re-ran inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
