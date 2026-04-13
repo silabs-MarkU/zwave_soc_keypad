@@ -31,9 +31,9 @@ Current implementation:
 - Specific type: `SPECIFIC_TYPE_SECURE_KEYPAD`
 - User icon: `ICON_TYPE_SPECIFIC_ENTRY_CONTROL_KEYPAD_0_9`
 - Installer icon: `ICON_TYPE_SPECIFIC_ENTRY_CONTROL_KEYPAD_0_9`
-- Requested security: `S2 Access Control`
+- Requested security keys: `S0`, `S2 Access Control`
 - Primary command class: `COMMAND_CLASS_ENTRY_CONTROL`
-- Supporting command classes kept: `Indicator`, `Battery`, `Association`, `Supervision`, `Version`, `Manufacturer Specific`, `Z-Wave Plus Info`
+- Supporting command classes kept: `Indicator`, `Battery`, `Association`, `Supervision`, `Version`, `Manufacturer Specific`, `Z-Wave Plus Info`, and others
 
 ## Removed Command Classes
 
@@ -377,5 +377,5 @@ This checklist summarizes the implemented work and completed validation.
 - [x] Added the real `KEYSCAN` callback path and matrix-to-logical-key translation.
 - [x] Exercised the existing EM2 wake handoff and verified the expected row-wake behavior.
 - [x] Ran physical keypress testing and verified lifeline notification delivery over Z-Wave.
-- [x] Added local user feedback for key accepted, cancel, and transmit failure.
+- [x] Added serial log visibility for decoded keys, transmit failure, and returned Supervision status.
 - [x] Re-ran inclusion, interview, configuration, and lifeline-notification tests with the fully connected keypad path.
