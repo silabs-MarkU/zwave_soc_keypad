@@ -360,7 +360,7 @@ The accessible column order is `EXP10`, `P24`, `P25`, `P31`, `P33`. The EM2 wake
 This checklist summarizes the implemented work and completed validation.
 
 - [x] Created this keypad PoC from the current Silicon Labs `ZWave_SoC_DoorLockKeypad_Solution` sample, keeping the FLiRS framework, build flow, and WSTK service-button behavior as the project foundation.
-- [x] Wrote the Entry Control implementation from the Z-Wave Alliance Application Specification PDF `zwave specifications_3828_1.pdf`.
+- [x] Wrote the Entry Control implementation from the Z-Wave Alliance Application Specification PDF, CCv1.
 - [x] Changed the device model to `GENERIC_TYPE_ENTRY_CONTROL` / `SPECIFIC_TYPE_SECURE_KEYPAD` and updated the keypad icons.
 - [x] Removed `Door Lock CC`, `User Code CC`, `User Credential CC`, and `Basic CC`.
 - [x] Kept the direct WSTK buttons for service actions such as learn mode, battery report, and factory reset.
