@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1500" role="img" aria-labelledby="title desc">
+  <title id="title">From Logical Key To Z-Wave Notification</title>
+  <desc id="desc">A static flow diagram showing how a decoded logical key is buffered, timed, and sent as an Entry Control notification.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .title { font: 700 34px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 18px ui-sans-serif, system-ui, sans-serif; fill: #334155; }
+      .section-app { fill: #e2e8f0; }
+      .section-cache { fill: #fef3c7; }
+      .section-tx { fill: #dbeafe; }
+      .section-label { font: 700 19px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; rx: 18; ry: 18; }
+      .box-title { font: 700 20px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .box-body { font: 400 16px ui-sans-serif, system-ui, sans-serif; fill: #334155; }
+      .flow { stroke: #475569; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .branch { stroke: #64748b; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .callout { fill: #eff6ff; stroke: #93c5fd; stroke-width: 2; rx: 16; ry: 16; }
+      .callout-title { font: 700 18px ui-sans-serif, system-ui, sans-serif; fill: #1d4ed8; }
+      .callout-body { font: 400 15px ui-sans-serif, system-ui, sans-serif; fill: #1e3a8a; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1500"/>
+  <rect class="panel" x="30" y="30" width="1540" height="1420" rx="28" ry="28"/>
+
+  <text class="title" x="70" y="95">From Logical Key To Z-Wave Notification</text>
+  <text class="subtitle" x="70" y="128">
+    <tspan x="70" dy="0">Once KEYSCAN has identified a key, the keypad app decides whether to buffer it,</tspan>
+    <tspan x="70" dy="24">wait for timeout, or send an Entry Control notification immediately.</tspan>
+  </text>
+
+  <rect class="section-app" x="70" y="170" width="250" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="198">Logical Key Classification</text>
+
+  <rect class="box" x="120" y="246" width="1360" height="108"/>
+  <text class="box-title" x="155" y="272">1. app_keypad_process_key() receives the logical key</text>
+  <text class="box-body" x="155" y="302">
+    <tspan x="155" dy="0">The key is now something meaningful to the app: an ASCII key, Enter, Escape,</tspan>
+    <tspan x="155" dy="24">or a reserved key that phase 1 ignores.</tspan>
+  </text>
+
+  <line class="flow" x1="800" y1="354" x2="800" y2="394"/>
+
+  <rect class="box" x="90" y="419" width="560" height="192"/>
+  <text class="box-title" x="122" y="457">ASCII path: 0-9, * and #</text>
+  <text class="box-body" x="122" y="485">
+    <tspan x="122" dy="0">If this is the first buffered key and cache size is greater than 1,</tspan>
+    <tspan x="122" dy="24">the keypad sends CACHING.</tspan>
+    <tspan x="122" dy="24">Then it appends the ASCII byte to s_cached_ascii</tspan>
+    <tspan x="122" dy="24">and checks whether the configured cache size is reached.</tspan>
+  </text>
+
+  <rect class="box" x="680" y="419" width="430" height="192"/>
+  <text class="box-title" x="712" y="457">Command path: Enter and Escape</text>
+  <text class="box-body" x="712" y="485">
+    <tspan x="712" dy="0">ENTER or CANCEL is sent immediately.</tspan>
+    <tspan x="712" dy="24">If digits are already buffered, that payload is included,</tspan>
+    <tspan x="712" dy="24">the event is transmitted,</tspan>
+    <tspan x="712" dy="24">and the local cache is cleared.</tspan>
+  </text>
+
+  <rect class="box" x="1140" y="419" width="340" height="192"/>
+  <text class="box-title" x="1172" y="457">Reserved path</text>
+  <text class="box-body" x="1172" y="485">
+    <tspan x="1172" dy="0">F1, F2, and arrows are kept for later work.</tspan>
+    <tspan x="1172" dy="24">They do not generate a Z-Wave action</tspan>
+    <tspan x="1172" dy="24">in phase 1.</tspan>
+  </text>
+
+  <rect class="section-cache" x="70" y="656" width="250" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="684">Cache And Timeout</text>
+
+  <line class="flow" x1="370" y1="611" x2="370" y2="708"/>
+
+  <rect class="box" x="120" y="728" width="560" height="156"/>
+  <text class="box-title" x="155" y="766">2. ASCII keys either send now or wait</text>
+  <text class="box-body" x="155" y="794">
+    <tspan x="155" dy="0">If the configured cache size is reached,</tspan>
+    <tspan x="155" dy="24">the keypad sends CACHED_KEYS immediately.</tspan>
+    <tspan x="155" dy="24">Otherwise it restarts the keypad timeout timer</tspan>
+    <tspan x="155" dy="24">and keeps the partial code in local memory.</tspan>
+  </text>
+
+  <line class="flow" x1="400" y1="884" x2="400" y2="924"/>
+
+  <rect class="box" x="120" y="944" width="560" height="180"/>
+  <text class="box-title" x="155" y="982">3. Timeout creates the delayed notification path</text>
+  <text class="box-body" x="155" y="1010">
+    <tspan x="155" dy="0">When the user pauses long enough, AppTimer expires.</tspan>
+    <tspan x="155" dy="24">The timer callback posts EVENT_APP_KEYPAD_TIMEOUT.</tspan>
+    <tspan x="155" dy="24">app.c dispatches app_keypad_process_timeout_event(),</tspan>
+    <tspan x="155" dy="24">which emits CACHED_KEYS using the buffered ASCII bytes.</tspan>
+  </text>
+
+  <rect class="callout" x="720" y="760" width="250" height="118"/>
+  <text class="callout-title" x="744" y="795">Short version</text>
+  <text class="callout-body" x="744" y="823">
+    <tspan x="744" dy="0">Digits can leave the node in two ways:</tspan>
+    <tspan x="744" dy="22">the cache fills up now,</tspan>
+    <tspan x="744" dy="22">or the timeout fires later.</tspan>
+  </text>
+
+  <rect class="section-tx" x="1010" y="656" width="390" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="1036" y="684">Entry Control Transport</text>
+
+  <path class="branch" d="M 895 611 V 728 H 1010"/>
+  <path class="branch" d="M 680 806 H 1010"/>
+  <path class="branch" d="M 680 1034 H 1010"/>
+
+  <rect class="box" x="1010" y="728" width="430" height="156"/>
+  <text class="box-title" x="1042" y="766">4. app_keypad_send_notification()</text>
+  <text class="box-body" x="1042" y="794">
+    <tspan x="1042" dy="0">The function builds the Entry Control payload</tspan>
+    <tspan x="1042" dy="24">with sequence number, data type, event type,</tspan>
+    <tspan x="1042" dy="24">and optional padded ASCII bytes.</tspan>
+  </text>
+
+  <line class="flow" x1="1225" y1="884" x2="1225" y2="924"/>
+
+  <rect class="box" x="1010" y="944" width="430" height="156"/>
+  <text class="box-title" x="1042" y="982">5. Supervision policy is chosen per event</text>
+  <text class="box-body" x="1042" y="1010">
+    <tspan x="1042" dy="0">CACHING is unsupervised.</tspan>
+    <tspan x="1042" dy="24">CACHED_KEYS, ENTER, and CANCEL</tspan>
+    <tspan x="1042" dy="24">request Supervision.</tspan>
+  </text>
+
+  <line class="flow" x1="1225" y1="1100" x2="1225" y2="1140"/>
+
+  <rect class="box" x="990" y="1160" width="470" height="244"/>
+  <text class="box-title" x="1042" y="1192">
+    <tspan x="1042" dy="0">6. ZAF transport sends</tspan>
+    <tspan x="1042" dy="24">the Lifeline notification</tspan>
+  </text>
+  <text class="box-body" x="1026" y="1248">
+    <tspan x="1026" dy="0">cc_engine_multicast_request() transmits</tspan>
+    <tspan x="1026" dy="24">the Entry Control Notification.</tspan>
+    <tspan x="1026" dy="24">The transmission callback reports OK, VERIFIED,</tspan>
+    <tspan x="1026" dy="24">or failure, and any returned Supervision Report is logged.</tspan>
+  </text>
+</svg>

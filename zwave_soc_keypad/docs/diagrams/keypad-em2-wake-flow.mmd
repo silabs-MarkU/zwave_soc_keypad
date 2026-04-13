@@ -1,0 +1,28 @@
+flowchart TD
+    subgraph PREP[Before EM2]
+        A[app_keypad_enter_em2_wake_mode() runs]
+        B[Stop KEYSCAN and disable column routes]
+        C[Drive column pins low as GPIO outputs]
+        D[Configure PA4..PA7 as input-pull<br/>with falling-edge interrupts]
+    end
+
+    subgraph SLEEP[While Sleeping]
+        E[Device enters EM2]
+        F[User presses a key]
+        G[Pressed key pulls one row low]
+        H[Row GPIO ISR stores a pending wake row mask]
+        I[ISR posts EVENT_APP_KEYPAD_WAKE]
+        J[ISR knows a row changed,<br/>not the final exact key]
+    end
+
+    subgraph RESTORE[After Wake]
+        K[Power transition callback leaves EM2]
+        L[app_keypad_leave_em2_wake_mode()<br/>restores KEYSCAN pin modes and routes]
+        M[sl_keyscan_driver_start_scan()<br/>resumes matrix scanning]
+        N[app.c dispatches EVENT_APP_KEYPAD_WAKE]
+        O[app_keypad_process_wake_event()<br/>starts the wake guard]
+        P[KEYSCAN now sees the full matrix state]
+        Q[Normal decode path converts that matrix state<br/>into the exact logical key]
+    end
+
+    A --> B --> C --> D --> E --> F --> G --> H --> I --> J --> K --> L --> M --> N --> O --> P --> Q

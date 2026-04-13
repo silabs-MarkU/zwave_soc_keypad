@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 1680" role="img" aria-labelledby="title desc">
+  <title id="title">From Physical Key Press To Logical Key</title>
+  <desc id="desc">A static flow diagram showing how a membrane key press becomes a logical keypad event through KEYSCAN and the ZAF app event distributor.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .section-physical { fill: #dbeafe; }
+      .section-power { fill: #fef3c7; }
+      .section-keyscan { fill: #dcfce7; }
+      .section-app { fill: #e2e8f0; }
+      .section-label { font: 700 20px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .title { font: 700 34px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 18px ui-sans-serif, system-ui, sans-serif; fill: #334155; }
+      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; rx: 18; ry: 18; }
+      .box-title { font: 700 22px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .box-body { font: 400 18px ui-sans-serif, system-ui, sans-serif; fill: #334155; }
+      .note { fill: #eff6ff; stroke: #93c5fd; stroke-width: 2; rx: 16; ry: 16; }
+      .note-title { font: 700 19px ui-sans-serif, system-ui, sans-serif; fill: #1d4ed8; }
+      .note-body { font: 400 16px ui-sans-serif, system-ui, sans-serif; fill: #1e3a8a; }
+      .flow { stroke: #475569; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1400" height="1680"/>
+  <rect class="panel" x="30" y="30" width="1340" height="1620" rx="28" ry="28"/>
+
+  <text class="title" x="70" y="95">From Physical Key Press To Logical Key</text>
+  <text class="subtitle" x="70" y="128">
+    <tspan x="70" dy="0">The membrane keypad only creates a row and column closure.</tspan>
+    <tspan x="70" dy="24">KEYSCAN turns that electrical closure into a matrix position, and the keypad app turns that matrix position into a logical key event.</tspan>
+  </text>
+
+  <rect class="section-physical" x="70" y="170" width="220" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="198">Physical Layer</text>
+
+  <rect class="box" x="110" y="246" width="1180" height="110"/>
+  <text class="box-title" x="145" y="286">1. Membrane switch closes</text>
+  <text class="box-body" x="145" y="318">
+    <tspan x="145" dy="0">A user presses one key.</tspan>
+    <tspan x="145" dy="28">Inside the keypad, that single switch connects exactly one row line to one column line.</tspan>
+  </text>
+
+  <line class="flow" x1="700" y1="356" x2="700" y2="398"/>
+
+  <rect class="section-power" x="70" y="413" width="180" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="441">Power State</text>
+
+  <rect class="box" x="110" y="473" width="1180" height="140"/>
+  <text class="box-title" x="145" y="511">2. The scan path depends on whether the device is already awake</text>
+  <text class="box-body" x="145" y="543">
+    <tspan x="145" dy="0">If the device is already awake, KEYSCAN is already running.</tspan>
+    <tspan x="145" dy="28">If the device just woke from EM2, the keypad code restores KEYSCAN GPIO modes and routes first,</tspan>
+    <tspan x="145" dy="28">then resumes scanning.</tspan>
+  </text>
+
+  <line class="flow" x1="700" y1="613" x2="700" y2="655"/>
+
+  <rect class="section-keyscan" x="70" y="670" width="210" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="698">KEYSCAN Engine</text>
+
+  <rect class="box" x="110" y="730" width="1180" height="138"/>
+  <text class="box-title" x="145" y="768">3. KEYSCAN sees the matrix state</text>
+  <text class="box-body" x="145" y="800">
+    <tspan x="145" dy="0">The Silicon Labs KEYSCAN driver drives the configured column outputs</tspan>
+    <tspan x="145" dy="28">and samples the row inputs on the 4x5 matrix.</tspan>
+    <tspan x="145" dy="28">That is the first point where the hardware is interpreted as a keypad instead of just a shorted switch.</tspan>
+  </text>
+
+  <line class="flow" x1="700" y1="868" x2="700" y2="910"/>
+
+  <rect class="box" x="110" y="930" width="1180" height="138"/>
+  <text class="box-title" x="145" y="968">4. The driver reports a valid key press event</text>
+  <text class="box-body" x="145" y="1000">
+    <tspan x="145" dy="0">The KEYSCAN callback fires on the accepted press event.</tspan>
+    <tspan x="145" dy="28">app_keypad_try_decode_matrix_key() then reads the active column</tspan>
+    <tspan x="145" dy="28">and row mask from the matrix image.</tspan>
+  </text>
+
+  <line class="flow" x1="700" y1="1068" x2="700" y2="1110"/>
+
+  <rect class="box" x="110" y="1130" width="1180" height="138"/>
+  <text class="box-title" x="145" y="1168">5. Matrix position becomes a logical key</text>
+  <text class="box-body" x="145" y="1200">
+    <tspan x="145" dy="0">The project applies its single-press column correction.</tspan>
+    <tspan x="145" dy="28">s_keyscan_key_map then converts the final row and column position</tspan>
+    <tspan x="145" dy="28">into a logical key such as 1, 2, Enter, Escape, F1, or Left.</tspan>
+  </text>
+
+  <line class="flow" x1="700" y1="1268" x2="700" y2="1310"/>
+
+  <rect class="section-app" x="70" y="1325" width="260" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="1353">Keypad App And ZAF</text>
+
+  <rect class="box" x="110" y="1385" width="760" height="92"/>
+  <text class="box-title" x="145" y="1432">6. The key is queued and posted into the app event distributor</text>
+
+  <rect class="note" x="890" y="1385" width="400" height="150"/>
+  <text class="note-title" x="915" y="1420">Result</text>
+  <text class="note-body" x="915" y="1450">
+    <tspan x="915" dy="0">app.c dispatches app_keypad_process_event(),</tspan>
+    <tspan x="915" dy="22">which hands the logical key to</tspan>
+    <tspan x="915" dy="22">app_keypad_process_key().</tspan>
+  </text>
+</svg>
