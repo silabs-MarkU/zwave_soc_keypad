@@ -1,0 +1,55 @@
+flowchart TD
+    subgraph APP[Keypad Application]
+        A[app_keypad_process_key() gets the logical key]
+        B{Key category}
+        C[ASCII key path for 0-9, * and #]
+        D[Command key path for Enter or Escape]
+        E[Reserved-key path for F1, F2 and arrows]
+    end
+
+    subgraph CACHE[Local Cache And Timer Behavior]
+        F{First buffered key and cache size > 1?}
+        G[Send CACHING]
+        H[Append ASCII byte to s_cached_ascii]
+        I{Cache size reached now?}
+        J[Send CACHED_KEYS now]
+        K[Restart keypad timeout timer]
+        L[Keep partial code in local memory]
+        M[AppTimer expires]
+        N[Timer callback posts EVENT_APP_KEYPAD_TIMEOUT]
+        O[app.c dispatches app_keypad_process_timeout_event()]
+        P[Timeout path sends CACHED_KEYS]
+    end
+
+    subgraph TX[Entry Control Notification Path]
+        Q[app_keypad_send_notification()<br/>builds the Entry Control payload]
+        R{Event type}
+        S[CACHING goes out without Supervision]
+        T[CACHED_KEYS, ENTER and CANCEL<br/>request Supervision]
+        U[cc_engine_multicast_request()<br/>sends the Lifeline notification]
+        V[Transmission callback reports OK, VERIFIED or failure]
+        W[Optional Supervision Report callback logs controller feedback]
+    end
+
+    A --> B
+    B -->|ASCII| C
+    B -->|Enter or Escape| D
+    B -->|Reserved| E
+
+    C --> F
+    F -->|yes| G --> H
+    F -->|no| H
+    H --> I
+    I -->|yes| J --> Q
+    I -->|no| K --> L
+    L --> M --> N --> O --> P --> Q
+
+    D --> Q
+    E --> X[No Z-Wave action in phase 1]
+
+    Q --> R
+    R -->|CACHING| S --> U
+    R -->|CACHED_KEYS| T --> U
+    R -->|ENTER or CANCEL| T --> U
+    U --> V
+    U --> W

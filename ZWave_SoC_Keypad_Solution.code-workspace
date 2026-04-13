@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../../SimplicityStudio/v6_workspace/.solution/ZWave_SoC_Keypad_Solution"
+		},
+		{
+			"name": "zwave_soc_keypad",
+			"path": "zwave_soc_keypad"
+		},
+		{
+			"name": "bootloader-storage-internal-single-zwave-ota",
+			"path": "bootloader-storage-internal-single-zwave-ota"
+		},
+		{
+			"name": "keypad_solution_poc",
+			"path": "."
+		}
+	],
+	"settings": {}
+}

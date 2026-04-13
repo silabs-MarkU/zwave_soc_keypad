@@ -140,6 +140,35 @@ Phase-1 supported Entry Control events:
 - `ENTER`
 - `CANCEL`
 
+### Flow Charts
+
+These diagrams tell the story in layers:
+
+- the membrane switch only creates an electrical short between one row and one column
+- `KEYSCAN` turns that short into a matrix position
+- the keypad app turns that matrix position into a logical key, local cache behavior, and a Z-Wave notification
+- static SVGs are used in the README for compatibility, while editable Mermaid source files live in [zwave_soc_keypad/docs/diagrams/README.md](/Users/maumina/Documents/keypad_solution_poc/zwave_soc_keypad/docs/diagrams/README.md)
+
+#### From Physical Key Press To Logical Key
+
+![From physical key press to logical key](zwave_soc_keypad/docs/images/keypad-physical-to-logical-flow.svg)
+
+What matters here is that `KEYSCAN` is the part that actually identifies the key. The membrane keypad itself does not "know" about digits or arrows; it only creates a row/column closure, and the decode step in `app_keypad_try_decode_matrix_key()` turns that into `1`, `2`, `Enter`, `Escape`, and so on.
+
+#### From Logical Key To Z-Wave Notification
+
+![From logical key to Z-Wave notification](zwave_soc_keypad/docs/images/keypad-notification-flow.svg)
+
+The timeout-driven notification path works as follows:
+
+1. digits are buffered locally
+2. the timer is restarted after each partial entry
+3. if the user pauses long enough, the timer callback posts `EVENT_APP_KEYPAD_TIMEOUT`
+4. that event runs `app_keypad_process_timeout_event()`
+5. the buffered digits are emitted as `CACHED_KEYS` over Z-Wave
+
+`Enter` and `Escape` take the shorter path: they generate `ENTER` or `CANCEL` immediately, include the buffered ASCII if any is present, and then clear the local cache.
+
 ### Notification Transport / Supervision
 
 - `CACHED_KEYS`, `ENTER`, and `CANCEL` request Supervision on outbound Entry Control notifications.
@@ -243,6 +272,12 @@ The low-energy approach is:
 5. After wake, restore all `9` pins to `KEYSCAN` routing and scan the matrix to determine the exact key.
 
 This keeps exact key detection available after wake while preserving the kit functions listed above.
+
+#### EM2 Wake Flow
+
+![EM2 wake flow for the keypad](zwave_soc_keypad/docs/images/keypad-em2-wake-flow.svg)
+
+The important distinction is that the row interrupt is only the wake mechanism. The exact key is identified later, after the chip wakes, restores `KEYSCAN`, and the `KEYSCAN` driver performs a real matrix scan again.
 
 ### KEYSCAN Configuration
 

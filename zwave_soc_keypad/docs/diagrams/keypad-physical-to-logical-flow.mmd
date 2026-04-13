@@ -1,0 +1,30 @@
+flowchart TD
+    subgraph PHY[Physical Layer]
+        A[User presses one membrane key]
+        B[That switch shorts one row line to one column line]
+    end
+
+    subgraph POWER[Power State]
+        C{Already awake and scanning?}
+        D[If waking from EM2,<br/>restore KEYSCAN GPIO modes and routes first]
+    end
+
+    subgraph KS[KEYSCAN Engine]
+        E[KEYSCAN drives columns and samples rows]
+        F[Driver reports a valid key press event]
+        G[app_keypad_try_decode_matrix_key()<br/>reads active column and row mask]
+        H[Single-press mode applies the project column correction]
+        I[s_keyscan_key_map converts matrix position<br/>into a logical key enum]
+    end
+
+    subgraph APP[Keypad App And ZAF Event Flow]
+        J[app_keypad_enqueue_key_from_isr()<br/>queues the logical key]
+        K[EVENT_APP_KEYPAD_PROCESS is posted<br/>to the ZAF app event distributor]
+        L[app.c dispatches app_keypad_process_event()]
+        M[app_keypad_process_key() receives the logical key]
+    end
+
+    A --> B --> C
+    C -->|yes| E
+    C -->|no, woke from EM2| D --> E
+    E --> F --> G --> H --> I --> J --> K --> L --> M

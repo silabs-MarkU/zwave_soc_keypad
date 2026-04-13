@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1240" role="img" aria-labelledby="title desc">
+  <title id="title">EM2 Wake Flow For The Keypad</title>
+  <desc id="desc">A static flow diagram showing how the keypad wakes the device from EM2 and how KEYSCAN identifies the exact key after wake.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M 0 0 L 12 6 L 0 12 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; }
+      .title { font: 700 34px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .subtitle { font: 400 19px ui-sans-serif, system-ui, sans-serif; fill: #334155; }
+      .section-prep { fill: #fef3c7; }
+      .section-sleep { fill: #dbeafe; }
+      .section-restore { fill: #dcfce7; }
+      .section-label { font: 700 20px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .box { fill: #ffffff; stroke: #94a3b8; stroke-width: 2; rx: 18; ry: 18; }
+      .box-title { font: 700 21px ui-sans-serif, system-ui, sans-serif; fill: #0f172a; }
+      .box-body { font: 400 17px ui-sans-serif, system-ui, sans-serif; fill: #334155; }
+      .flow { stroke: #475569; stroke-width: 4; fill: none; marker-end: url(#arrow); }
+      .callout { fill: #fff7ed; stroke: #fdba74; stroke-width: 2; rx: 16; ry: 16; }
+      .callout-title { font: 700 18px ui-sans-serif, system-ui, sans-serif; fill: #c2410c; }
+      .callout-body { font: 400 16px ui-sans-serif, system-ui, sans-serif; fill: #9a3412; }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1500" height="1240"/>
+  <rect class="panel" x="30" y="30" width="1440" height="1180" rx="28" ry="28"/>
+
+  <text class="title" x="70" y="95">EM2 Wake Flow For The Keypad</text>
+  <text class="subtitle" x="70" y="130">The GPIO interrupt is the wake mechanism, not the decode mechanism. The exact key is identified only after KEYSCAN is restored and scans the matrix again.</text>
+
+  <rect class="section-prep" x="70" y="170" width="220" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="198">Before EM2</text>
+
+  <rect class="box" x="110" y="230" width="1280" height="112"/>
+  <text class="box-title" x="145" y="268">1. app_keypad_enter_em2_wake_mode() prepares the keypad for sleep</text>
+  <text class="box-body" x="145" y="298">
+    <tspan x="145" dy="0">The code stops KEYSCAN, disables KEYSCAN column routes, drives the column pins low as ordinary GPIO,</tspan>
+    <tspan x="145" dy="26">and configures PA4 through PA7 as input-pull pins with falling-edge interrupts.</tspan>
+  </text>
+
+  <line class="flow" x1="750" y1="342" x2="750" y2="386"/>
+
+  <rect class="section-sleep" x="70" y="401" width="190" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="429">While In EM2</text>
+
+  <rect class="box" x="110" y="461" width="1280" height="112"/>
+  <text class="box-title" x="145" y="499">2. A key press wakes the device electrically</text>
+  <text class="box-body" x="145" y="529">
+    <tspan x="145" dy="0">When the user presses a key, one row is pulled low through the pressed switch because the columns are being held low.</tspan>
+    <tspan x="145" dy="26">That falling edge triggers the row GPIO interrupt.</tspan>
+  </text>
+
+  <line class="flow" x1="750" y1="573" x2="750" y2="617"/>
+
+  <rect class="box" x="110" y="637" width="820" height="112"/>
+  <text class="box-title" x="145" y="675">3. The ISR records wake state and posts EVENT_APP_KEYPAD_WAKE</text>
+  <text class="box-body" x="145" y="705">
+    <tspan x="145" dy="0">The ISR stores a pending row mask and asks the ZAF app event distributor to process a wake event later.</tspan>
+    <tspan x="145" dy="26">This keeps the interrupt handler small and fast.</tspan>
+  </text>
+
+  <rect class="callout" x="960" y="637" width="430" height="112"/>
+  <text class="callout-title" x="985" y="673">Important distinction</text>
+  <text class="callout-body" x="985" y="701">
+    <tspan x="985" dy="0">At ISR time, the code only knows that a row changed.</tspan>
+    <tspan x="985" dy="24">It does not know the final exact key yet.</tspan>
+  </text>
+
+  <line class="flow" x1="750" y1="749" x2="750" y2="793"/>
+
+  <rect class="section-restore" x="70" y="808" width="260" height="40" rx="20" ry="20"/>
+  <text class="section-label" x="95" y="836">After Wake</text>
+
+  <rect class="box" x="110" y="868" width="1280" height="112"/>
+  <text class="box-title" x="145" y="906">4. EM2 exit restores the true scan path</text>
+  <text class="box-body" x="145" y="936">
+    <tspan x="145" dy="0">The power transition callback leaves EM2, app_keypad_leave_em2_wake_mode() restores KEYSCAN GPIO modes</tspan>
+    <tspan x="145" dy="26">and routes, and sl_keyscan_driver_start_scan() resumes matrix scanning.</tspan>
+  </text>
+
+  <line class="flow" x1="750" y1="980" x2="750" y2="1024"/>
+
+  <rect class="box" x="110" y="1044" width="1280" height="112"/>
+  <text class="box-title" x="145" y="1082">5. KEYSCAN now identifies the exact key and the normal path resumes</text>
+  <text class="box-body" x="145" y="1112">
+    <tspan x="145" dy="0">app.c dispatches EVENT_APP_KEYPAD_WAKE, app_keypad_process_wake_event() starts the wake guard, and KEYSCAN</tspan>
+    <tspan x="145" dy="26">performs a real matrix scan that the decode path turns into the final logical key.</tspan>
+  </text>
+</svg>
