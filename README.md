@@ -1,4 +1,4 @@
-# Z-Wave Keypad Proof of Concept:
+# Z-Wave Long Range Keypad Proof of Concept:
 
 Who: Mark Umina<br>
 When: Friday, March 20, 2026<br>
